@@ -342,7 +342,7 @@ export default function MarketDetailPage({
                         <input 
                           id="bet-amount" 
                           type="text" 
-                          value={betAmount}
+                          value={betAmount || ""}
                           onChange={(e) => setBetAmount(e.target.value)}
                           className="w-full rounded-sm border border-border bg-surface-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-text-primary outline-none transition-colors duration-150 focus:border-text-muted" 
                         />
