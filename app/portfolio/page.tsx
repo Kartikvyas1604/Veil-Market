@@ -8,16 +8,14 @@ import { SealBadge } from "@/components/seal-badge";
 import { getUserPositionsWithMarkets } from "@/lib/actions/markets";
 import type { DbPositionCommitment, MarketWithOdds } from "@/lib/supabase";
 
-// Mock auth hook - in a real app this would come from your wallet provider (e.g., wagmi useAccount)
-// or from the Next.js session context.
-const MOCK_WALLET = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; // Hardhat #0
+import { useAccount } from "wagmi";
 
 type EnrichedPosition = DbPositionCommitment & { market: MarketWithOdds | null };
 
 export default function PortfolioPage() {
   const [positions, setPositions] = useState<EnrichedPosition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [walletAddress] = useState(MOCK_WALLET); // TODO: Connect to real wallet context
+  const { address: walletAddress } = useAccount();
 
   useEffect(() => {
     async function load() {
