@@ -85,6 +85,9 @@ A: Currently on Fuji testnet. Mainnet after audit.`,
 export default function DocsPage() {
   return (
     <div className="relative bg-paper paper-texture">
+      {/* Case file margin line */}
+      <div className="case-file-margin case-file-margin--light absolute left-[calc(50%-20rem)] top-0 bottom-0 hidden lg:block" aria-hidden="true" />
+
       <main id="main-content" className="mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         {/* Header */}
         <div className="mb-12 border-b border-veil-200 pb-8 stagger-enter" style={{ animationDelay: "0ms" }}>

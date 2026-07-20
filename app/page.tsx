@@ -22,6 +22,9 @@ export default function Home() {
     <div className="relative bg-paper">
       <GridBg className="fixed inset-0 h-full w-full opacity-30" />
 
+      {/* Case file margin line — continuous through all sections */}
+      <div className="case-file-margin case-file-margin--light absolute left-[calc(50%-38rem)] top-0 bottom-0 hidden lg:block" aria-hidden="true" />
+
       <main id="main-content">
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -72,8 +75,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Tick-mark divider: Hero → Stats */}
+      <div className="section-divider mx-4 md:mx-6 lg:mx-8" aria-hidden="true" />
+
       {/* Stats */}
-      <section className="relative border-y border-veil-200 bg-veil-100/50">
+      <section className="relative bg-veil-100/50">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 lg:px-8">
           <StatsBar
             stats={[
@@ -84,6 +90,9 @@ export default function Home() {
           />
         </div>
       </section>
+
+      {/* Tick-mark divider: Stats → Featured */}
+      <div className="section-divider mx-4 md:mx-6 lg:mx-8" aria-hidden="true" />
 
       {/* Featured Markets */}
       <section className="relative">
@@ -120,8 +129,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Tick-mark divider: Featured → Activity */}
+      <div className="section-divider mx-4 md:mx-6 lg:mx-8" aria-hidden="true" />
+
       {/* Recent Activity + Protocol Status */}
-      <section className="relative border-t border-veil-200">
+      <section className="relative">
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div>
@@ -152,8 +164,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Tick-mark divider: Activity → How It Works */}
+      <div className="section-divider mx-4 md:mx-6 lg:mx-8" aria-hidden="true" />
+
       {/* How It Works */}
-      <section className="relative border-t border-veil-200 bg-veil-50">
+      <section className="relative bg-veil-50">
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
           <h2 className="mb-12 text-center font-serif text-2xl text-ink md:text-3xl stagger-enter" style={{ animationDelay: "100ms" }}>
             How It Works
