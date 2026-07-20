@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn, formatNumber, getMarketUrgency } from "@/lib/utils";
 import { SealBadge } from "./seal-badge";
 import { OddsTicker } from "./odds-ticker";
 import { Countdown } from "./countdown";
@@ -14,6 +14,7 @@ interface MarketCardProps {
 
 export function MarketCard({ market, index = 0 }: MarketCardProps) {
   const isLive = market.status === "live";
+  const urgency = getMarketUrgency(market.endDate, market.totalPool);
 
   return (
     <Link
@@ -35,6 +36,7 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
         </span>
         <SealBadge
           status={market.status === "resolved" ? "revealed" : "sealed"}
+          urgency={market.status === "resolved" ? "normal" : urgency}
         />
       </div>
 

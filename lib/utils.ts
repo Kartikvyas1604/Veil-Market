@@ -31,3 +31,16 @@ export const CIPHER_CHARS = "0123456789ABCDEFabcdef#@$%&*!?<>{}[]";
 export function randomCipherChar(): string {
   return CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)];
 }
+
+export type Urgency = "critical" | "normal" | "low";
+
+export function getMarketUrgency(endDate: number, totalPool: number): Urgency {
+  const hoursLeft = (endDate - Date.now()) / 3_600_000;
+  const isHighVolume = totalPool > 800_000;
+  const isClosingSoon = hoursLeft < 48;
+  const isLowUrgency = hoursLeft > 90 * 24 && totalPool < 400_000;
+
+  if (isClosingSoon || (isHighVolume && hoursLeft < 7 * 24)) return "critical";
+  if (isLowUrgency) return "low";
+  return "normal";
+}

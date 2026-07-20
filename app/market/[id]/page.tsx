@@ -2,7 +2,7 @@
 
 import { use, useState, useCallback } from "react";
 import Link from "next/link";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, getMarketUrgency } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { CipherText } from "@/components/cipher-text";
 import { SealBadge } from "@/components/seal-badge";
@@ -50,6 +50,7 @@ export default function MarketDetailPage({
   }, []);
 
   const isLive = market.status === "live";
+  const urgency = getMarketUrgency(market.endDate, market.totalPool);
 
   return (
     <div className="relative min-h-screen bg-veil-900">
@@ -76,7 +77,7 @@ export default function MarketDetailPage({
           <div className="mb-3 flex items-center gap-3">
             <span className="font-mono text-[10px] tracking-[0.15em] text-text-muted uppercase">{market.category}</span>
             <span className="h-1 w-1 rounded-full bg-border-strong" />
-            <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} />
+            <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} urgency={isRevealed || market.status === "resolved" ? "normal" : urgency} />
           </div>
           <h1 className="font-serif text-2xl leading-snug text-text-primary md:text-3xl lg:text-4xl">
             {market.question}
@@ -209,7 +210,7 @@ export default function MarketDetailPage({
             <div className="rounded-sm border border-border bg-surface-raised p-6 stagger-enter" style={{ animationDelay: "200ms" }}>
               <div className="mb-4 flex items-center justify-between">
                 <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Your Position</span>
-                <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} />
+            <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} urgency={isRevealed || market.status === "resolved" ? "normal" : urgency} />
               </div>
 
               {isRevealed || market.status === "resolved" ? (
