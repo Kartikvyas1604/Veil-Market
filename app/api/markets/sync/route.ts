@@ -16,15 +16,14 @@ export async function POST(request: Request) {
       .from("markets")
       .insert({
         market_id: parseInt(marketId, 10),
-        contract_address: contractAddress,
+        contract_address: contractAddress.toLowerCase(),
         question: question.trim(),
         category,
-        resolution_time: new Date(resolutionTime).toISOString(),
+        resolution_time: new Date(parseInt(resolutionTime)).toISOString(),
         min_bet: parseFloat(minBet),
         max_bet: parseFloat(maxBet),
         status: "active",
         outcome: "none",
-        created_by: creatorAddress.toLowerCase()
       })
       .select()
       .single();
