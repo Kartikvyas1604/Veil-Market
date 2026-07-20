@@ -54,8 +54,10 @@ export function ConnectWallet({ className }: { className?: string }) {
               <p className="px-2 py-1 font-mono text-[10px] tracking-wider uppercase text-text-muted">
                 Select Wallet
               </p>
-              {connectors.map((connector) => (
-                <button
+              {connectors
+                .filter((connector) => connector.name !== "Injected")
+                .map((connector) => (
+                  <button
                   key={connector.uid}
                   onClick={() => handleConnect(connector)}
                   className="flex w-full items-center gap-3 rounded-sm px-2 py-2.5 font-mono text-xs text-text-primary transition-colors hover:bg-surface-elevated"

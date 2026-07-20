@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -14,6 +15,7 @@ const links = [
 
 export function Nav() {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-xl">
@@ -22,6 +24,7 @@ export function Nav() {
           href="/"
           className="flex items-center gap-2.5 group"
           aria-label="VEIL home"
+          onClick={() => setMobileMenuOpen(false)}
         >
           <div className="relative flex h-8 w-8 items-center justify-center">
             <Image 
@@ -37,7 +40,8 @@ export function Nav() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1" aria-label="Main navigation">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
           {links.map((link) => {
             const isActive =
               link.href === "/"
@@ -68,7 +72,50 @@ export function Nav() {
             <ConnectWallet />
           </div>
         </nav>
+
+        {/* Mobile Toggle + Wallet */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ConnectWallet className="px-2" />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex h-10 w-10 items-center justify-center rounded-sm border border-border-strong bg-surface-raised text-text-primary"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <span className="font-mono text-lg leading-none">×</span>
+            ) : (
+              <span className="font-mono text-lg leading-none">≡</span>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-surface-raised">
+          <nav className="flex flex-col p-4 space-y-2">
+            {links.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center px-4 py-3 font-mono text-sm tracking-wide transition-colors duration-150 rounded-sm",
+                    isActive ? "bg-surface-elevated text-text-primary" : "text-text-muted hover:text-text-primary hover:bg-surface-elevated"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
