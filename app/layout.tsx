@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Sans } from "next/font/google";
-import { JetBrains_Mono } from "next/font/google";
-import { Instrument_Serif } from "next/font/google";
+import { Geist, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import { Nav } from "@/components/nav";
 import "./globals.css";
 
-const geistSans = Geist_Sans({
+const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({

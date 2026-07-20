@@ -50,6 +50,7 @@ export function OddsTicker({
 
     frameRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, animated]);
 
   const percent = (display * 100).toFixed(1);

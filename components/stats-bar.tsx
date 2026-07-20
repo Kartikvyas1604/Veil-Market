@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn, formatNumber } from "@/lib/utils";
 
 interface StatItem {
@@ -24,32 +24,36 @@ function AnimatedNumber({
   prefix?: string;
   suffix?: string;
 }) {
-  const [display, setDisplay] = useState(0);
-  const frameRef = useRef<number>(0);
+  const [display, setDisplay] = useState(value);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mq.matches) {
-      setDisplay(value);
       return;
     }
 
+    let cancelled = false;
+    let frameId = 0;
     const start = performance.now();
     const duration = 1200;
 
     const tick = (now: number) => {
+      if (cancelled) return;
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       setDisplay(Math.round(value * eased));
 
       if (progress < 1) {
-        frameRef.current = requestAnimationFrame(tick);
+        frameId = requestAnimationFrame(tick);
       }
     };
 
-    frameRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameRef.current);
+    frameId = requestAnimationFrame(tick);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+    };
   }, [value]);
 
   return (
