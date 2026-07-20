@@ -11,19 +11,14 @@ export function SealBadge({ status, className }: SealBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.15em] uppercase",
+        "inline-flex items-center gap-1.5 rounded-sm px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.15em] uppercase border",
         isSealed
-          ? "bg-veil-sealed/30 text-veil-text-dim border border-veil-sealed/50"
-          : "bg-veil-accent/10 text-veil-accent border border-veil-accent/30",
+          ? "bg-redaction-bar/50 text-text-muted border-border"
+          : "bg-veil-800 text-text-primary border-border-strong",
         className
       )}
     >
-      <span
-        className={cn(
-          "h-1.5 w-1.5 rounded-full",
-          isSealed ? "bg-veil-text-muted" : "bg-veil-accent animate-pulse"
-        )}
-      />
+      {isSealed ? "■" : "□"}
       {isSealed ? "Sealed" : "Revealed"}
     </span>
   );

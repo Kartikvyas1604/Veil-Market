@@ -7,7 +7,7 @@ export function Scanline({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <div
-        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-veil-accent/20 to-transparent"
+        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-veil-700/30 to-transparent"
         style={{
           animation: "scanline 8s linear infinite",
         }}

@@ -1,31 +1,48 @@
 "use client";
 
-export function GridBg({ className }: { className?: string }) {
+import { cn } from "@/lib/utils";
+
+interface CipherNoiseProps {
+  className?: string;
+  density?: number;
+  speed?: number;
+  opacity?: number;
+}
+
+export function CipherNoise({
+  className,
+  density = 0.4,
+  speed = 80,
+  opacity = 0.06,
+}: CipherNoiseProps) {
   return (
     <div
-      className={className}
+      className={cn("pointer-events-none", className)}
       aria-hidden="true"
       style={{
         backgroundImage: `
-          linear-gradient(rgba(224, 247, 250, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(224, 247, 250, 0.03) 1px, transparent 1px)
+          radial-gradient(circle, rgba(250, 250, 248, ${opacity}) 1px, transparent 1px)
         `,
-        backgroundSize: "40px 40px",
+        backgroundSize: "18px 18px",
       }}
     />
   );
 }
 
-export function DotMatrix({ className }: { className?: string }) {
+export function GridBg({ className }: { className?: string }) {
   return (
     <div
-      className={className}
+      className={cn("dot-grid pointer-events-none", className)}
       aria-hidden="true"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, rgba(224, 247, 250, 0.06) 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-      }}
+    />
+  );
+}
+
+export function PaperTexture({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("paper-texture pointer-events-none", className)}
+      aria-hidden="true"
     />
   );
 }

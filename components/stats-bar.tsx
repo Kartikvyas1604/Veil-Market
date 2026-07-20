@@ -28,9 +28,7 @@ function AnimatedNumber({
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mq.matches) {
-      return;
-    }
+    if (mq.matches) return;
 
     let cancelled = false;
     let frameId = 0;
@@ -57,7 +55,7 @@ function AnimatedNumber({
   }, [value]);
 
   return (
-    <span className="font-mono font-bold tabular-nums text-veil-text-bright">
+    <span className="font-mono font-bold tabular-nums text-text-primary">
       {prefix}
       {formatNumber(display)}
       {suffix}
@@ -84,7 +82,7 @@ export function StatsBar({ stats, className }: StatsBarProps) {
             prefix={stat.prefix}
             suffix={stat.suffix}
           />
-          <span className="font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
+          <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">
             {stat.label}
           </span>
         </div>

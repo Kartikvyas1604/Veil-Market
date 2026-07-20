@@ -9,7 +9,6 @@ interface CipherTextProps {
   duration?: number;
   className?: string;
   onComplete?: () => void;
-  glowOnReveal?: boolean;
 }
 
 function getMasked(text: string) {
@@ -22,9 +21,10 @@ export function CipherText({
   duration = 1000,
   className,
   onComplete,
-  glowOnReveal = false,
 }: CipherTextProps) {
-  const [display, setDisplay] = useState(() => (isRevealing ? text : getMasked(text)));
+  const [display, setDisplay] = useState(() =>
+    isRevealing ? text : getMasked(text)
+  );
   const [revealed, setRevealed] = useState(false);
   const frameRef = useRef<number>(0);
   const prevRevealing = useRef(isRevealing);
@@ -88,7 +88,6 @@ export function CipherText({
     if (isRevealing) {
       return scramble();
     } else {
-      // Defer to avoid synchronous setState in effect
       const id = requestAnimationFrame(() => {
         setDisplay(getMasked(text));
         setRevealed(false);
@@ -99,10 +98,8 @@ export function CipherText({
 
   return (
     <span
-      className={`font-mono tabular-nums inline-block transition-all duration-300 ${
-        glowOnReveal && revealed
-          ? "text-veil-accent drop-shadow-[0_0_8px_rgba(224,247,250,0.3)]"
-          : ""
+      className={`font-mono tabular-nums inline-block transition-opacity duration-300 ${
+        revealed ? "opacity-100" : "opacity-100"
       } ${className ?? ""}`}
       aria-label={isRevealing ? text : "Encrypted"}
     >

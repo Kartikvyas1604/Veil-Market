@@ -24,18 +24,11 @@ export function Countdown({ endDate, className }: CountdownProps) {
     <span
       className={cn(
         "font-mono text-xs tabular-nums tracking-wide",
-        isEnded ? "text-veil-text-muted" : "text-veil-text-dim",
+        isEnded ? "text-text-muted" : "text-text-secondary",
         className
       )}
     >
-      {isEnded ? (
-        "Ended"
-      ) : (
-        <>
-          <span className="text-veil-accent/60 mr-1">⏱</span>
-          {remaining}
-        </>
-      )}
+      {isEnded ? "Ended" : remaining}
     </span>
   );
 }
