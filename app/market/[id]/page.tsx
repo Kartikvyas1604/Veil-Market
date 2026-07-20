@@ -4,11 +4,11 @@ import { use, useState, useCallback } from "react";
 import Link from "next/link";
 import { cn, formatNumber } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
-import { Scanline } from "@/components/scanline";
 import { CipherText } from "@/components/cipher-text";
 import { SealBadge } from "@/components/seal-badge";
 import { OddsTicker } from "@/components/odds-ticker";
 import { Countdown } from "@/components/countdown";
+import { StampButton } from "@/components/stamp-button";
 import { getMarket } from "@/lib/markets";
 import { notFound } from "next/navigation";
 
@@ -24,150 +24,107 @@ export default function MarketDetailPage({
     notFound();
   }
 
-  const [isRevealed, setIsRevealed] = useState(
-    market.status === "resolved"
-  );
+  const [isRevealed, setIsRevealed] = useState(market.status === "resolved");
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
+  const [betStep, setBetStep] = useState<"idle" | "encrypting" | "proof" | "sealed">("idle");
 
   const handleReveal = useCallback(() => {
     setIsDecrypting(true);
-    // Phase 1: Decryption scramble (1000ms)
     setTimeout(() => {
       setShowFlash(true);
       setIsRevealed(true);
-      // Phase 2: Flash + glow (200ms)
-      setTimeout(() => {
-        setShowFlash(false);
-        setIsDecrypting(false);
-      }, 300);
+      setTimeout(() => setShowFlash(false), 300);
+      setIsDecrypting(false);
     }, 1000);
+  }, []);
+
+  const handlePlaceBet = useCallback(() => {
+    setBetStep("encrypting");
+    setTimeout(() => {
+      setBetStep("proof");
+      setTimeout(() => {
+        setBetStep("sealed");
+      }, 800);
+    }, 1200);
   }, []);
 
   const isLive = market.status === "live";
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-veil-900">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
-      <Scanline />
 
-      {/* Reveal flash overlay */}
+      {/* Reveal flash */}
       {showFlash && (
         <div
-          className="fixed inset-0 z-50 pointer-events-none bg-veil-accent/10"
-          style={{
-            animation: "pulse-accent 300ms ease-out forwards",
-          }}
+          className="fixed inset-0 z-50 pointer-events-none bg-text-primary/5"
+          style={{ animation: "contrast-snap 300ms ease-out forwards" }}
         />
       )}
 
       <div className="relative mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-12 lg:px-8">
         {/* Breadcrumb */}
-        <div
-          className="mb-8 stagger-enter"
-          style={{ animationDelay: "0ms" }}
-        >
-          <Link
-            href="/markets"
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-veil-text-muted transition-colors duration-150 hover:text-veil-text-dim"
-          >
+        <div className="mb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
+          <Link href="/markets" className="inline-flex items-center gap-1.5 font-mono text-xs text-text-muted transition-colors duration-150 hover:text-text-secondary">
             ← Back to Markets
           </Link>
         </div>
 
         {/* Header */}
-        <div
-          className="mb-8 stagger-enter"
-          style={{ animationDelay: "50ms" }}
-        >
+        <div className="mb-8 stagger-enter" style={{ animationDelay: "50ms" }}>
           <div className="mb-3 flex items-center gap-3">
-            <span className="font-mono text-[10px] tracking-[0.15em] text-veil-text-muted uppercase">
-              {market.category}
-            </span>
-            <span className="h-1 w-1 rounded-full bg-veil-border-strong" />
-            <SealBadge
-              status={
-                isRevealed || market.status === "resolved"
-                  ? "revealed"
-                  : "sealed"
-              }
-            />
+            <span className="font-mono text-[10px] tracking-[0.15em] text-text-muted uppercase">{market.category}</span>
+            <span className="h-1 w-1 rounded-full bg-border-strong" />
+            <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} />
           </div>
-
-          <h1 className="font-serif text-2xl leading-snug text-veil-text-bright md:text-3xl lg:text-4xl">
+          <h1 className="font-serif text-2xl leading-snug text-text-primary md:text-3xl lg:text-4xl">
             {market.question}
           </h1>
         </div>
 
-        {/* Main content grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left: Odds + Pool */}
+          {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Odds panel */}
-            <div
-              className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
-              style={{ animationDelay: "100ms" }}
-            >
+            <div className="rounded-sm border border-border bg-surface-raised p-6 stagger-enter" style={{ animationDelay: "100ms" }}>
               <div className="mb-4 flex items-center justify-between">
-                <span className="font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
+                <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">
                   {isRevealed ? "Final Odds" : "Live Odds"}
                 </span>
                 {isLive && !isRevealed && (
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-veil-success animate-pulse" />
-                    <span className="font-mono text-[10px] text-veil-text-muted">
-                      Computing
-                    </span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-pulse" />
+                    <span className="font-mono text-[10px] text-text-muted">Computing</span>
                   </span>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <OddsTicker
-                    value={market.yesOdds}
-                    label="YES"
-                    size="lg"
-                    animated={isRevealed}
-                  />
-                  <div className="mt-3 font-mono text-xs text-veil-text-muted">
-                    Pool:{" "}
-                    <span className="text-veil-text-dim">
-                      ${formatNumber(market.yesPool)}
-                    </span>
+                  <OddsTicker value={market.yesOdds} label="YES" size="lg" animated={isRevealed} redacted={isLive && !isRevealed} />
+                  <div className="mt-3 font-mono text-xs text-text-muted">
+                    Pool: <span className="text-text-secondary">${formatNumber(market.yesPool)}</span>
                   </div>
                 </div>
                 <div>
-                  <OddsTicker
-                    value={market.noOdds}
-                    label="NO"
-                    size="lg"
-                    animated={isRevealed}
-                  />
-                  <div className="mt-3 font-mono text-xs text-veil-text-muted">
-                    Pool:{" "}
-                    <span className="text-veil-text-dim">
-                      ${formatNumber(market.noPool)}
-                    </span>
+                  <OddsTicker value={market.noOdds} label="NO" size="lg" animated={isRevealed} redacted={isLive && !isRevealed} />
+                  <div className="mt-3 font-mono text-xs text-text-muted">
+                    Pool: <span className="text-text-secondary">${formatNumber(market.noPool)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Pool bar */}
               <div className="mt-6">
-                <div className="mb-1.5 flex justify-between font-mono text-[10px] text-veil-text-muted">
+                <div className="mb-1.5 flex justify-between font-mono text-[10px] text-text-muted">
                   <span>Total Pool</span>
                   <span>${formatNumber(market.totalPool)}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-veil-elevated">
-                  <div
-                    className="h-full rounded-full bg-veil-accent/40 transition-all duration-1000"
-                    style={{
-                      width: `${market.yesOdds * 100}%`,
-                    }}
-                  />
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
+                  <div className="h-full rounded-full bg-text-muted/30 transition-all duration-1000" style={{ width: `${market.yesOdds * 100}%` }} />
                 </div>
-                <div className="mt-1 flex justify-between font-mono text-[10px] text-veil-text-muted">
+                <div className="mt-1 flex justify-between font-mono text-[10px] text-text-muted">
                   <span>YES side</span>
                   <span>NO side</span>
                 </div>
@@ -176,259 +133,150 @@ export default function MarketDetailPage({
 
             {/* Place Bet panel */}
             {isLive && !isRevealed && (
-              <div
-                className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
-                style={{ animationDelay: "150ms" }}
-              >
-                <div className="mb-4 font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
+              <div className="rounded-sm border border-border bg-surface-raised p-6 stagger-enter" style={{ animationDelay: "150ms" }}>
+                <div className="mb-4 font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">
                   Place Position
                 </div>
 
-                <div className="mb-4 grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    className="rounded-md border border-veil-accent/30 bg-veil-accent/5 py-3 font-mono text-sm font-semibold text-veil-accent transition-colors duration-150 hover:bg-veil-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
-                  >
-                    YES
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-veil-border py-3 font-mono text-sm font-medium text-veil-text-dim transition-colors duration-150 hover:border-veil-border-strong hover:text-veil-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
-                  >
-                    NO
-                  </button>
-                </div>
+                {betStep === "sealed" ? (
+                  <div className="py-4 text-center">
+                    <div className="mb-2 font-mono text-lg text-text-primary">Position Sealed</div>
+                    <p className="font-mono text-xs text-text-muted">Your encrypted position is now on-chain. Nobody can see your bet.</p>
+                  </div>
+                ) : betStep !== "idle" ? (
+                  <div className="py-8 text-center">
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-sm border border-border-strong">
+                      <span className="font-mono text-sm text-text-primary animate-pulse">
+                        {betStep === "encrypting" ? "Enc" : "Prf"}
+                      </span>
+                    </div>
+                    <div className="font-mono text-xs text-text-muted">
+                      {betStep === "encrypting" ? "Encrypting position client-side..." : "Generating zero-knowledge proof..."}
+                    </div>
+                    <div className="mt-3 mx-auto max-w-xs">
+                      <div className="h-1 rounded-full bg-surface-elevated overflow-hidden">
+                        <div
+                          className="h-full bg-text-muted/50 transition-all duration-1000"
+                          style={{ width: betStep === "encrypting" ? "60%" : "90%" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 grid grid-cols-2 gap-3">
+                      <button type="button" className="rounded-sm border border-text-primary/30 bg-text-primary/5 py-3 font-mono text-sm font-semibold text-text-primary transition-colors duration-150 hover:bg-text-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900">
+                        YES
+                      </button>
+                      <button type="button" className="rounded-sm border border-border py-3 font-mono text-sm font-medium text-text-muted transition-colors duration-150 hover:border-border-strong hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900">
+                        NO
+                      </button>
+                    </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="bet-amount"
-                    className="mb-1.5 block font-mono text-[10px] tracking-[0.15em] text-veil-text-muted uppercase"
-                  >
-                    Amount (USDC)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-veil-text-muted">
-                      $
-                    </span>
-                    <input
-                      id="bet-amount"
-                      type="text"
-                      defaultValue="1,000"
-                      className="w-full rounded-md border border-veil-border bg-veil-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-veil-text-bright outline-none transition-colors duration-150 focus:border-veil-accent/50 focus:ring-1 focus:ring-veil-accent/30"
-                    />
-                  </div>
-                </div>
+                    <div className="mb-4">
+                      <label htmlFor="bet-amount" className="mb-1.5 block font-mono text-[10px] tracking-[0.15em] text-text-muted uppercase">
+                        Amount (USDC)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-text-muted">$</span>
+                        <input id="bet-amount" type="text" defaultValue="1,000" className="w-full rounded-sm border border-border bg-surface-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-text-primary outline-none transition-colors duration-150 focus:border-text-muted" />
+                      </div>
+                    </div>
 
-                <div className="mb-4 space-y-1.5">
-                  <div className="flex justify-between font-mono text-[11px]">
-                    <span className="text-veil-text-muted">Your odds</span>
-                    <span className="text-veil-text-dim">
-                      {(market.yesOdds * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-mono text-[11px]">
-                    <span className="text-veil-text-muted">Potential return</span>
-                    <span className="text-veil-accent">
-                      ${(1000 / market.yesOdds).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-mono text-[11px]">
-                    <span className="text-veil-text-muted">Encrypted with</span>
-                    <span className="text-veil-text-dim">eERC (ElGamal)</span>
-                  </div>
-                </div>
+                    <div className="mb-4 space-y-1.5">
+                      <div className="flex justify-between font-mono text-[11px]">
+                        <span className="text-text-muted">Your odds</span>
+                        <span className="text-text-secondary">{(market.yesOdds * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between font-mono text-[11px]">
+                        <span className="text-text-muted">Potential return</span>
+                        <span className="text-text-primary">${(1000 / market.yesOdds).toFixed(2)}</span>
+                      </div>
+                    </div>
 
-                <button
-                  type="button"
-                  className="w-full rounded-md bg-veil-accent py-2.5 font-mono text-xs font-semibold tracking-wide text-veil-bg transition-colors duration-150 hover:bg-veil-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
-                >
-                  Seal Position
-                </button>
-                <p className="mt-2 text-center font-mono text-[10px] text-veil-text-muted">
-                  Your bet will be encrypted on-chain. Nobody will see your direction or size.
-                </p>
+                    <StampButton variant="light" className="w-full" onClick={handlePlaceBet}>
+                      Seal Position
+                    </StampButton>
+                    <p className="mt-2 text-center font-mono text-[10px] text-text-muted">
+                      Your bet will be encrypted on-chain.
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
-            {/* Position panel (encrypted) */}
-            <div
-              className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
-              style={{ animationDelay: "200ms" }}
-            >
+            {/* Position panel */}
+            <div className="rounded-sm border border-border bg-surface-raised p-6 stagger-enter" style={{ animationDelay: "200ms" }}>
               <div className="mb-4 flex items-center justify-between">
-                <span className="font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
-                  Your Position
-                </span>
-                <SealBadge
-                  status={
-                    isRevealed || market.status === "resolved"
-                      ? "revealed"
-                      : "sealed"
-                  }
-                />
+                <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Your Position</span>
+                <SealBadge status={isRevealed || market.status === "resolved" ? "revealed" : "sealed"} />
               </div>
 
               {isRevealed || market.status === "resolved" ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline justify-between">
-                    <span className="font-mono text-sm text-veil-text-dim">
-                      Direction
-                    </span>
-                    <span
-                      className={cn(
-                        "font-mono text-lg font-bold",
-                        market.resolvedOutcome === "yes"
-                          ? "text-veil-success"
-                          : "text-veil-danger"
-                      )}
-                    >
-                      <CipherText
-                        text={
-                          market.resolvedOutcome === "yes" ? "YES" : "NO"
-                        }
-                        isRevealing={isDecrypting || isRevealed}
-                        duration={1000}
-                        glowOnReveal
-                      />
+                    <span className="font-mono text-sm text-text-muted">Direction</span>
+                    <span className="font-mono text-lg font-bold text-text-primary">
+                      <CipherText text={market.resolvedOutcome === "yes" ? "YES" : "NO"} isRevealing={isDecrypting || isRevealed} duration={1000} />
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-mono text-sm text-veil-text-dim">
-                      Position Size
-                    </span>
-                    <CipherText
-                      text="$2,450.00"
-                      isRevealing={isDecrypting || isRevealed}
-                      duration={1000}
-                      glowOnReveal
-                    />
+                    <span className="font-mono text-sm text-text-muted">Position Size</span>
+                    <CipherText text="$2,450.00" isRevealing={isDecrypting || isRevealed} duration={1000} />
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-mono text-sm text-veil-text-dim">
-                      Potential Return
-                    </span>
-                    <CipherText
-                      text="$3,951.61"
-                      isRevealing={isDecrypting || isRevealed}
-                      duration={1000}
-                      glowOnReveal
-                    />
+                    <span className="font-mono text-sm text-text-muted">Potential Return</span>
+                    <CipherText text="$3,951.61" isRevealing={isDecrypting || isRevealed} duration={1000} />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {["Direction", "Position Size", "Potential Return"].map(
-                    (label) => (
-                      <div
-                        key={label}
-                        className="flex items-baseline justify-between"
-                      >
-                        <span className="font-mono text-sm text-veil-text-dim">
-                          {label}
-                        </span>
-                        <span className="font-mono text-sm text-veil-sealed">
-                          █████████
-                        </span>
-                      </div>
-                    )
-                  )}
+                  {["Direction", "Position Size", "Potential Return"].map((label) => (
+                    <div key={label} className="flex items-baseline justify-between">
+                      <span className="font-mono text-sm text-text-muted">{label}</span>
+                      <span className="redaction-bar inline-block h-4 w-24 rounded-sm" />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right: Sidebar */}
+          {/* Right sidebar */}
           <div className="space-y-6">
-            {/* Action card */}
-            <div
-              className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
-              style={{ animationDelay: "150ms" }}
-            >
+            <div className="rounded-sm border border-border bg-surface-raised p-6 stagger-enter" style={{ animationDelay: "150ms" }}>
               {isLive && !isRevealed ? (
                 <>
                   <div className="mb-4">
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
-                      Time Remaining
-                    </span>
-                    <div className="mt-1">
-                      <Countdown
-                        endDate={market.endDate}
-                        className="text-lg"
-                      />
-                    </div>
+                    <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Time Remaining</span>
+                    <div className="mt-1"><Countdown endDate={market.endDate} className="text-lg" /></div>
                   </div>
-
                   <div className="mb-4 space-y-2">
                     <div className="flex justify-between font-mono text-xs">
-                      <span className="text-veil-text-muted">Total Pool</span>
-                      <span className="text-veil-text-dim">
-                        ${formatNumber(market.totalPool)}
-                      </span>
+                      <span className="text-text-muted">Total Pool</span>
+                      <span className="text-text-secondary">${formatNumber(market.totalPool)}</span>
                     </div>
                     <div className="flex justify-between font-mono text-xs">
-                      <span className="text-veil-text-muted">Positions</span>
-                      <span className="text-veil-text-dim">
-                        {Math.floor(market.totalPool / 120).toLocaleString()}
-                      </span>
+                      <span className="text-text-muted">Positions</span>
+                      <span className="text-text-secondary">{Math.floor(market.totalPool / 120).toLocaleString()}</span>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleReveal}
-                    disabled={isDecrypting}
-                    className={cn(
-                      "w-full rounded-md py-2.5 font-mono text-xs font-semibold tracking-wide transition-all duration-150",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg",
-                      isDecrypting
-                        ? "bg-veil-surface text-veil-text-muted cursor-wait"
-                        : "bg-veil-accent text-veil-bg hover:bg-veil-accent/90"
-                    )}
-                  >
-                    {isDecrypting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-veil-text-muted border-t-transparent" />
-                        Decrypting...
-                      </span>
-                    ) : (
-                      "Simulate Resolution"
-                    )}
-                  </button>
+                  <StampButton variant="light" className="w-full" onClick={handleReveal} disabled={isDecrypting}>
+                    {isDecrypting ? "Decrypting..." : "Simulate Resolution"}
+                  </StampButton>
                 </>
               ) : (
                 <>
                   <div className="mb-4">
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
-                      Resolved Outcome
-                    </span>
+                    <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Resolved Outcome</span>
                     <div className="mt-1">
-                      <span
-                        className={cn(
-                          "font-mono text-lg font-bold",
-                          market.resolvedOutcome === "yes"
-                            ? "text-veil-success"
-                            : "text-veil-danger"
-                        )}
-                      >
-                        {market.resolvedOutcome?.toUpperCase()}
-                      </span>
+                      <span className="font-mono text-lg font-bold text-text-primary">{market.resolvedOutcome?.toUpperCase()}</span>
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <div className="flex justify-between font-mono text-xs">
-                      <span className="text-veil-text-muted">Final Pool</span>
-                      <span className="text-veil-text-dim">
-                        ${formatNumber(market.totalPool)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between font-mono text-xs">
-                      <span className="text-veil-text-muted">Resolved</span>
-                      <span className="text-veil-text-dim">
-                        {market.resolutionDate
-                          ? new Date(market.resolutionDate).toLocaleDateString()
-                          : "Recently"}
-                      </span>
+                      <span className="text-text-muted">Final Pool</span>
+                      <span className="text-text-secondary">${formatNumber(market.totalPool)}</span>
                     </div>
                   </div>
                 </>
@@ -436,13 +284,8 @@ export default function MarketDetailPage({
             </div>
 
             {/* Encryption info */}
-            <div
-              className="rounded-lg border border-veil-border/50 bg-veil-surface/30 p-6 stagger-enter"
-              style={{ animationDelay: "250ms" }}
-            >
-              <h3 className="mb-3 font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
-                Encryption Status
-              </h3>
+            <div className="rounded-sm border border-border/50 bg-surface/50 p-6 stagger-enter" style={{ animationDelay: "250ms" }}>
+              <h3 className="mb-3 font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Encryption Status</h3>
               <div className="space-y-2.5">
                 {[
                   { label: "Protocol", value: "eERC (ElGamal)" },
@@ -450,12 +293,9 @@ export default function MarketDetailPage({
                   { label: "Verification", value: "ZK-SNARK" },
                   { label: "Chain", value: "Avalanche C-Chain" },
                 ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex justify-between font-mono text-[11px]"
-                  >
-                    <span className="text-veil-text-muted">{item.label}</span>
-                    <span className="text-veil-text-dim">{item.value}</span>
+                  <div key={item.label} className="flex justify-between font-mono text-[11px]">
+                    <span className="text-text-muted">{item.label}</span>
+                    <span className="text-text-secondary">{item.value}</span>
                   </div>
                 ))}
               </div>
