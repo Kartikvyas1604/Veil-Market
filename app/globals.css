@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-veil-bg: #0A0D12;
+  --color-veil-surface: #11151C;
+  --color-veil-raised: #161B24;
+  --color-veil-elevated: #1C222E;
+  --color-veil-accent: #E0F7FA;
+  --color-veil-accent-dim: #5A8A94;
+  --color-veil-accent-glow: rgba(224, 247, 250, 0.08);
+  --color-veil-text-bright: #E8ECF1;
+  --color-veil-text: #C0C8D4;
+  --color-veil-text-dim: #8A94A6;
+  --color-veil-text-muted: #505A6B;
+  --color-veil-border: #1E2536;
+  --color-veil-border-strong: #2A3348;
+  --color-veil-sealed: #3A4256;
+  --color-veil-revealed: #E0F7FA;
+  --color-veil-danger: #FF6B6B;
+  --color-veil-success: #69DB7C;
+
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-serif: var(--font-instrument-serif);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --veil-bg: #0A0D12;
+  --veil-accent: #E0F7FA;
+  --veil-sealed: #3A4256;
+  --veil-revealed: #E0F7FA;
+  --veil-text-dim: #8A94A6;
+  --veil-text-bright: #E8ECF1;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-veil-bg);
+  color: var(--color-veil-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(224, 247, 250, 0.2);
+  color: #E0F7FA;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0D12;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A3348;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3A4256;
+}
+
+/* Cipher scramble animation keyframes */
+@keyframes cipher-glow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes pulse-accent {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 247, 250, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(224, 247, 250, 0.15); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tick-roll {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Staggered entrance utility */
+.stagger-enter {
+  animation: fade-in-up 500ms var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter {
+    animation: none;
+    opacity: 1;
+  }
+  @keyframes cipher-glow {
+    0%, 100% { opacity: 1; }
+  }
+  @keyframes pulse-accent {
+    0%, 100% { box-shadow: none; }
+  }
+  @keyframes scanline {
+    0% { transform: none; }
+  }
+  @keyframes tick-roll {
+    0% { transform: none; opacity: 1; }
+  }
 }
