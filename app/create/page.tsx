@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
 
-import { useAccount } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { VEIL_FACTORY_ABI } from "@/lib/contracts";
 
 const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
 
@@ -16,6 +17,7 @@ type Step = "compose" | "review" | "confirming" | "done";
 export default function CreateMarketPage() {
   const router = useRouter();
   const { address } = useAccount();
+  const { writeContractAsync } = useWriteContract();
 
   const [step, setStep] = useState<Step>("compose");
   const [question, setQuestion] = useState("");
@@ -77,10 +79,28 @@ export default function CreateMarketPage() {
         return;
       }
 
+      // Send the transaction using the calldata from the API
+      const txHash = await writeContractAsync({
+        abi: VEIL_FACTORY_ABI,
+        address: data.contractParams.factoryAddress as `0x${string}`,
+        functionName: "createMarket",
+        args: [
+          data.contractParams.question,
+          data.contractParams.category,
+          BigInt(data.contractParams.resolutionTime),
+          BigInt(data.contractParams.minBet),
+          BigInt(data.contractParams.maxBet),
+          data.contractParams.committee,
+        ],
+      });
+
+      console.log("Transaction sent!", txHash);
+
       setCreatedMarket({ question: data.market.question, pendingId: data.pendingId });
       setStep("done");
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (e: any) {
+      console.error(e);
+      setError(e.shortMessage || e.message || "Transaction failed or rejected.");
       setStep("compose");
     } finally {
       setIsSubmitting(false);

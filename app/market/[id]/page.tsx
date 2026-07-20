@@ -13,6 +13,7 @@ import { getMarket } from "@/lib/actions/markets";
 import { supabase } from "@/lib/supabase";
 import type { MarketWithOdds } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import { useAccount, useWalletClient, useWriteContract } from "wagmi";
 
 export default function MarketDetailPage({
   params,
@@ -98,9 +99,16 @@ export default function MarketDetailPage({
     };
   }, [marketId]);
 
+  const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { writeContractAsync } = useWriteContract();
+
   const [isRevealingLocal, setIsRevealingLocal] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [betStep, setBetStep] = useState<"idle" | "encrypting" | "proof" | "sealed">("idle");
+  const [selectedSide, setSelectedSide] = useState<1 | 2>(1); // 1 = YES, 2 = NO
+  const [betAmount, setBetAmount] = useState("100");
+  const [betError, setBetError] = useState("");
 
   // Legacy manual reveal button simulation
   const handleReveal = useCallback(() => {
@@ -112,15 +120,69 @@ export default function MarketDetailPage({
     }, 1000);
   }, []);
 
-  const handlePlaceBet = useCallback(() => {
+  const handlePlaceBet = async () => {
+    if (!address || !walletClient || !market) {
+      setBetError("Please connect your wallet first");
+      return;
+    }
+    
+    setBetError("");
     setBetStep("encrypting");
-    setTimeout(() => {
+    
+    try {
+      // Import dynamically to avoid heavy crypto bundle on initial load if possible
+      const { generateBetProof, deriveKeyFromSignature } = await import("@/lib/eerc");
+      
+      // Derive dummy key or real key depending on auth step (for speedrun we just use a fixed dummy public key for the auditor)
+      const dummyPublicKey = { x: 0n, y: 1n };
+      
+      const amountFloat = parseFloat(betAmount);
+      if (isNaN(amountFloat) || amountFloat <= 0) {
+        throw new Error("Invalid bet amount");
+      }
+      
+      const betAmountWei = BigInt(Math.floor(amountFloat * 1e18));
+      
       setBetStep("proof");
-      setTimeout(() => {
-        setBetStep("sealed");
-      }, 800);
-    }, 1200);
-  }, []);
+      
+      // Generate the mock proof and ElGamal encrypted bet
+      const betProof = await generateBetProof(
+        betAmountWei,
+        Number(market.market_id),
+        selectedSide,
+        1n, // mock private key for speedrun
+        dummyPublicKey,
+        dummyPublicKey
+      );
+      
+      // We set bettor address dynamically
+      betProof.publicSignals[0] = BigInt(address);
+
+      // Now send the transaction
+      const { VEIL_MARKET_ABI } = await import("@/lib/contracts");
+      
+      const txHash = await writeContractAsync({
+        abi: VEIL_MARKET_ABI,
+        address: market.contract_address as `0x${string}`,
+        functionName: "placeBet",
+        args: [
+          betProof.proofA,
+          betProof.proofB,
+          betProof.proofC,
+          betProof.publicSignals,
+          selectedSide,
+          betProof.encryptedBet
+        ],
+      });
+      
+      console.log("Bet transaction sent!", txHash);
+      setBetStep("sealed");
+    } catch (e: any) {
+      console.error(e);
+      setBetError(e.shortMessage || e.message || "Failed to place bet. Did you reject?");
+      setBetStep("idle");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -255,10 +317,18 @@ export default function MarketDetailPage({
                 ) : (
                   <>
                     <div className="mb-4 grid grid-cols-2 gap-3">
-                      <button type="button" className="rounded-sm border border-text-primary/30 bg-text-primary/5 py-3 font-mono text-sm font-semibold text-text-primary transition-colors duration-150 hover:bg-text-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900">
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedSide(1)}
+                        className={`rounded-sm border py-3 font-mono text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900 ${selectedSide === 1 ? 'border-text-primary/30 bg-text-primary/5 text-text-primary hover:bg-text-primary/10' : 'border-border text-text-muted hover:border-border-strong hover:text-text-secondary'}`}
+                      >
                         YES
                       </button>
-                      <button type="button" className="rounded-sm border border-border py-3 font-mono text-sm font-medium text-text-muted transition-colors duration-150 hover:border-border-strong hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900">
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedSide(2)}
+                        className={`rounded-sm border py-3 font-mono text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-900 ${selectedSide === 2 ? 'border-text-primary/30 bg-text-primary/5 text-text-primary hover:bg-text-primary/10' : 'border-border text-text-muted hover:border-border-strong hover:text-text-secondary'}`}
+                      >
                         NO
                       </button>
                     </div>
@@ -269,7 +339,13 @@ export default function MarketDetailPage({
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-text-muted">$</span>
-                        <input id="bet-amount" type="text" defaultValue="100" className="w-full rounded-sm border border-border bg-surface-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-text-primary outline-none transition-colors duration-150 focus:border-text-muted" />
+                        <input 
+                          id="bet-amount" 
+                          type="text" 
+                          value={betAmount}
+                          onChange={(e) => setBetAmount(e.target.value)}
+                          className="w-full rounded-sm border border-border bg-surface-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-text-primary outline-none transition-colors duration-150 focus:border-text-muted" 
+                        />
                       </div>
                     </div>
 
@@ -283,6 +359,11 @@ export default function MarketDetailPage({
                     <StampButton variant="light" className="w-full" onClick={handlePlaceBet}>
                       Seal Position
                     </StampButton>
+                    {betError && (
+                      <p className="mt-2 text-center font-mono text-xs text-red-400">
+                        {betError}
+                      </p>
+                    )}
                     <p className="mt-2 text-center font-mono text-[10px] text-text-muted">
                       Your bet will be encrypted on-chain.
                     </p>
