@@ -174,6 +174,82 @@ export default function MarketDetailPage({
               </div>
             </div>
 
+            {/* Place Bet panel */}
+            {isLive && !isRevealed && (
+              <div
+                className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
+                style={{ animationDelay: "150ms" }}
+              >
+                <div className="mb-4 font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
+                  Place Position
+                </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    className="rounded-md border border-veil-accent/30 bg-veil-accent/5 py-3 font-mono text-sm font-semibold text-veil-accent transition-colors duration-150 hover:bg-veil-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
+                  >
+                    YES
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-md border border-veil-border py-3 font-mono text-sm font-medium text-veil-text-dim transition-colors duration-150 hover:border-veil-border-strong hover:text-veil-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
+                  >
+                    NO
+                  </button>
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="bet-amount"
+                    className="mb-1.5 block font-mono text-[10px] tracking-[0.15em] text-veil-text-muted uppercase"
+                  >
+                    Amount (USDC)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-veil-text-muted">
+                      $
+                    </span>
+                    <input
+                      id="bet-amount"
+                      type="text"
+                      defaultValue="1,000"
+                      className="w-full rounded-md border border-veil-border bg-veil-elevated py-2.5 pl-7 pr-4 font-mono text-sm text-veil-text-bright outline-none transition-colors duration-150 focus:border-veil-accent/50 focus:ring-1 focus:ring-veil-accent/30"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4 space-y-1.5">
+                  <div className="flex justify-between font-mono text-[11px]">
+                    <span className="text-veil-text-muted">Your odds</span>
+                    <span className="text-veil-text-dim">
+                      {(market.yesOdds * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-mono text-[11px]">
+                    <span className="text-veil-text-muted">Potential return</span>
+                    <span className="text-veil-accent">
+                      ${(1000 / market.yesOdds).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-mono text-[11px]">
+                    <span className="text-veil-text-muted">Encrypted with</span>
+                    <span className="text-veil-text-dim">eERC (ElGamal)</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="w-full rounded-md bg-veil-accent py-2.5 font-mono text-xs font-semibold tracking-wide text-veil-bg transition-colors duration-150 hover:bg-veil-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg"
+                >
+                  Seal Position
+                </button>
+                <p className="mt-2 text-center font-mono text-[10px] text-veil-text-muted">
+                  Your bet will be encrypted on-chain. Nobody will see your direction or size.
+                </p>
+              </div>
+            )}
+
             {/* Position panel (encrypted) */}
             <div
               className="rounded-lg border border-veil-border bg-veil-surface/50 p-6 stagger-enter"
