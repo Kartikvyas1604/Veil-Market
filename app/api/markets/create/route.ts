@@ -56,21 +56,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = createSupabaseServerClient();
 
-    // Insert pending market record — gets a real contract_address once on-chain
+    // Mock indexer behavior: Insert directly into database so it shows up immediately
+    const mockMarketId = Math.floor(Date.now() / 1000); // Unique enough for speedrun
     const { data: newMarket, error: insertError } = await supabase
       .from("markets")
       .insert({
-        // market_id is assigned on-chain; use a temp placeholder
-        market_id: -1,
-        contract_address: "0xpending",
+        market_id: mockMarketId,
+        contract_address: "0xMockContract_" + mockMarketId,
         question: question.trim(),
         category,
         resolution_time: new Date(resolutionTime).toISOString(),
         min_bet: minBetNum,
         max_bet: maxBetNum,
-        status: "pending",
-        outcome: "none",
-        created_by: finalAddress.toLowerCase(),
+        status: "active",
+        outcome: "none"
       })
       .select()
       .single();
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Market insert error:", insertError);
       return NextResponse.json(
-        { error: "Failed to save market. Try again." },
+        { error: "Failed to save market to database." },
         { status: 500 }
       );
     }
@@ -93,11 +92,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      pendingId: newMarket.id,
+      pendingId: "pending-on-chain",
       market: {
-        question: newMarket.question,
-        category: newMarket.category,
-        resolution_time: newMarket.resolution_time,
+        question: question.trim(),
+        category: category,
+        resolution_time: new Date(resolutionTime).toISOString(),
       },
       // Calldata params the frontend uses to call createMarket via wagmi/viem
       contractParams: {
