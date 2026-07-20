@@ -7,12 +7,15 @@ import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
 
+import { useAccount } from "wagmi";
+
 const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
 
 type Step = "compose" | "review" | "confirming" | "done";
 
 export default function CreateMarketPage() {
   const router = useRouter();
+  const { address } = useAccount();
 
   const [step, setStep] = useState<Step>("compose");
   const [question, setQuestion] = useState("");
@@ -40,6 +43,7 @@ export default function CreateMarketPage() {
     if (!isDateValid) return "Resolution date must be in the future.";
     if (parseFloat(minBet) <= 0) return "Min bet must be greater than 0.";
     if (parseFloat(maxBet) <= parseFloat(minBet)) return "Max bet must be greater than min bet.";
+    if (!address) return "You must connect your wallet first.";
     return "";
   }
 
@@ -61,7 +65,7 @@ export default function CreateMarketPage() {
       const res = await fetch("/api/markets/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, category, resolutionDate, minBet, maxBet }),
+        body: JSON.stringify({ question, category, resolutionDate, minBet, maxBet, creatorAddress: address }),
       });
 
       const data = await res.json();
@@ -308,7 +312,6 @@ export default function CreateMarketPage() {
                   variant="light"
                   className="w-full"
                   onClick={handleSubmit}
-                  disabled={!isQuestionValid || !isDateValid}
                 >
                   Review Market →
                 </StampButton>

@@ -3,20 +3,24 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify session
-    const sessionCookie = request.cookies.get("veil-session")?.value;
-    if (!sessionCookie) {
-      return NextResponse.json({ error: "Unauthorized — connect wallet first" }, { status: 401 });
-    }
-
-    const session = JSON.parse(sessionCookie);
-    if (!session.userId || !session.address) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-    }
-
     // Parse and validate body
     const body = await request.json();
-    const { question, category, resolutionDate, minBet, maxBet } = body;
+    const { question, category, resolutionDate, minBet, maxBet, creatorAddress } = body;
+
+    // Verify session or use passed address (since SIWE flow is currently bypassed on frontend)
+    const sessionCookie = request.cookies.get("veil-session")?.value;
+    let sessionAddress = "";
+    if (sessionCookie) {
+      try {
+        sessionAddress = JSON.parse(sessionCookie).address;
+      } catch (e) {}
+    }
+
+    const finalAddress = sessionAddress || creatorAddress;
+
+    if (!finalAddress) {
+      return NextResponse.json({ error: "Unauthorized — connect wallet first" }, { status: 401 });
+    }
 
     if (!question?.trim()) {
       return NextResponse.json({ error: "Question is required" }, { status: 400 });
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
         max_bet: maxBetNum,
         status: "pending",
         outcome: "none",
-        created_by: session.address.toLowerCase(),
+        created_by: finalAddress.toLowerCase(),
       })
       .select()
       .single();
@@ -85,7 +89,7 @@ export async function POST(request: NextRequest) {
     const minBetWei = BigInt(Math.floor(minBetNum * 1e18)).toString();
     const maxBetWei = BigInt(Math.floor(maxBetNum * 1e18)).toString();
     const factoryAddress = process.env.NEXT_PUBLIC_VEIL_FACTORY_ADDRESS;
-    const committeeAddress = process.env.COMMITTEE_ADDRESS || session.address;
+    const committeeAddress = process.env.COMMITTEE_ADDRESS || finalAddress;
 
     return NextResponse.json({
       success: true,
