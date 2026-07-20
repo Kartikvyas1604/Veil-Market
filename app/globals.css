@@ -89,18 +89,34 @@ html[data-theme="light"] ::selection {
 html[data-theme="light"] ::-webkit-scrollbar-track { background: #F5F4F0; }
 html[data-theme="light"] ::-webkit-scrollbar-thumb { background: #D4D1CB; }
 
-/* ─── Redaction bar ─── */
+/* ─── Redaction bar — diagonal hatch texture ─── */
 .redaction-bar {
   position: relative;
   overflow: hidden;
-  background: #252322;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(250, 250, 248, 0.07) 2px,
+      rgba(250, 250, 248, 0.07) 3px
+    ),
+    #252322;
   color: transparent;
   user-select: none;
   border-radius: 2px;
 }
 
 html[data-theme="light"] .redaction-bar {
-  background: #D4D1CB;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(22, 22, 26, 0.07) 2px,
+      rgba(22, 22, 26, 0.07) 3px
+    ),
+    #D4D1CB;
 }
 
 /* Animated redaction wipe — left to right reveal */
@@ -197,6 +213,111 @@ html[data-theme="light"] .encrypted-text {
   background-clip: text;
 }
 
+/* ─── Section divider — tick-mark ruler ─── */
+.section-divider {
+  position: relative;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    #D4D1CB 0px,
+    #D4D1CB 1px,
+    transparent 1px,
+    transparent 12px
+  );
+}
+
+html[data-theme="light"] .section-divider {
+  background: repeating-linear-gradient(
+    90deg,
+    #D4D1CB 0px,
+    #D4D1CB 1px,
+    transparent 1px,
+    transparent 12px
+  );
+}
+
+.section-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 11px,
+    #D4D1CB 11px,
+    #D4D1CB 13px,
+    transparent 13px,
+    transparent 24px
+  );
+}
+
+html[data-theme="light"] .section-divider::before {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 11px,
+    #A8A49E 11px,
+    #A8A49E 13px,
+    transparent 13px,
+    transparent 24px
+  );
+}
+
+/* ─── Case file margin line ─── */
+.case-file-margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  pointer-events: none;
+}
+
+.case-file-margin--light {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #D4D1CB 5%,
+    #D4D1CB 95%,
+    transparent 100%
+  );
+}
+
+.case-file-margin--dark {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #3A3836 5%,
+    #3A3836 95%,
+    transparent 100%
+  );
+}
+
+/* ─── Exhibit stamp — rotated rubber-stamp annotation ─── */
+.exhibit-stamp {
+  position: absolute;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: 1px solid;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0.5;
+  transform: rotate(-6deg);
+}
+
+/* Pulse for critical badges */
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
 /* Focus ring — grayscale only */
 *:focus-visible {
   outline: 2px solid #7A756F;
@@ -212,7 +333,9 @@ html[data-theme="light"] *:focus-visible {
   .stagger-enter { animation: none; opacity: 1; }
   .redact-reveal { animation: none; transform: scaleX(0); }
   .encrypted-text { animation: none; }
+  .badge-pulse { animation: none; }
   @keyframes scanline { 0% { transform: none; } }
   @keyframes tick-roll { 0% { transform: none; opacity: 1; } }
   @keyframes contrast-snap { 0% { opacity: 1; } }
+  @keyframes badge-pulse { 0% { opacity: 1; } }
 }
