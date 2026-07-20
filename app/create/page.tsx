@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
 
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, usePublicClient } from "wagmi";
+import { decodeEventLog } from "viem";
 import { VEIL_FACTORY_ABI } from "@/lib/contracts";
 
 const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
@@ -18,6 +19,7 @@ export default function CreateMarketPage() {
   const router = useRouter();
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const [step, setStep] = useState<Step>("compose");
   const [question, setQuestion] = useState("");
@@ -96,7 +98,57 @@ export default function CreateMarketPage() {
 
       console.log("Transaction sent!", txHash);
 
-      setCreatedMarket({ question: data.market.question, pendingId: data.pendingId });
+      // Wait for the transaction to mine
+      if (!publicClient) throw new Error("Public client not found");
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      
+      let realMarketId = "";
+      let realContractAddress = "";
+
+      for (const log of receipt.logs) {
+        try {
+          const decoded = decodeEventLog({
+            abi: VEIL_FACTORY_ABI,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decoded.eventName === 'MarketCreated') {
+            const args = decoded.args as any;
+            realMarketId = args.marketId.toString();
+            realContractAddress = args.marketContract;
+            break;
+          }
+        } catch (e) {
+          // ignore logs that don't match our ABI
+        }
+      }
+
+      if (!realMarketId || !realContractAddress) {
+        throw new Error("Could not find MarketCreated event in transaction logs");
+      }
+
+      // Sync the real on-chain data to our database
+      const syncRes = await fetch("/api/markets/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          marketId: realMarketId,
+          contractAddress: realContractAddress,
+          question,
+          category,
+          resolutionTime: data.contractParams.resolutionTime * 1000,
+          minBet,
+          maxBet,
+          creatorAddress: address
+        }),
+      });
+
+      if (!syncRes.ok) {
+        console.error("Failed to sync to DB", await syncRes.text());
+        throw new Error("Market deployed but failed to sync to frontend database.");
+      }
+
+      setCreatedMarket({ question: data.market.question, pendingId: realMarketId });
       setStep("done");
     } catch (e: any) {
       console.error(e);

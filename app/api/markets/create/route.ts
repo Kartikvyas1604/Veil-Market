@@ -54,34 +54,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid bet range" }, { status: 400 });
     }
 
-    const supabase = createSupabaseServerClient();
-
-    // Mock indexer behavior: Insert directly into database so it shows up immediately
-    const mockMarketId = Math.floor(Date.now() / 1000); // Unique enough for speedrun
-    const { data: newMarket, error: insertError } = await supabase
-      .from("markets")
-      .insert({
-        market_id: mockMarketId,
-        contract_address: "0xMockContract_" + mockMarketId,
-        question: question.trim(),
-        category,
-        resolution_time: new Date(resolutionTime).toISOString(),
-        min_bet: minBetNum,
-        max_bet: maxBetNum,
-        status: "active",
-        outcome: "none"
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error("Market insert error:", insertError);
-      return NextResponse.json(
-        { error: "Failed to save market to database." },
-        { status: 500 }
-      );
-    }
-
     // Build contract calldata for VeilFactory.createMarket()
     // The user's wallet signs and broadcasts this — never the server
     const resolutionTimestampSeconds = Math.floor(resolutionTime / 1000);
