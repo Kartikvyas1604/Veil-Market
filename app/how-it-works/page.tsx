@@ -70,7 +70,7 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <div className="relative bg-paper paper-texture">
-      <div className="mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
+      <main id="main-content" className="mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         {/* Header */}
         <div className="mb-16 stagger-enter" style={{ animationDelay: "0ms" }}>
           <span className="mb-4 inline-block font-mono text-[10px] tracking-[0.3em] text-veil-400 uppercase">
@@ -121,7 +121,7 @@ export default function HowItWorksPage() {
             Read the full technical docs →
           </Link>
         </div>
-      </div>
+      </main>
 
       <Footer />
     </div>

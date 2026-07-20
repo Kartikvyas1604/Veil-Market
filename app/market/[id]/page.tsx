@@ -63,7 +63,7 @@ export default function MarketDetailPage({
         />
       )}
 
-      <div className="relative mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-12 lg:px-8">
+      <main id="main-content" className="relative mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-12 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
           <Link href="/markets" className="inline-flex items-center gap-1.5 font-mono text-xs text-text-muted transition-colors duration-150 hover:text-text-secondary">
@@ -302,7 +302,7 @@ export default function MarketDetailPage({
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

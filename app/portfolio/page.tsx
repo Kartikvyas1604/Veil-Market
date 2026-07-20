@@ -35,7 +35,7 @@ export default function PortfolioPage() {
     <div className="relative min-h-screen bg-veil-900">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
 
-      <div className="relative mx-auto max-w-5xl px-4 pt-10 pb-16 md:px-6 md:pt-14 lg:px-8">
+      <main id="main-content" className="relative mx-auto max-w-5xl px-4 pt-10 pb-16 md:px-6 md:pt-14 lg:px-8">
         {/* Header */}
         <div className="mb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
           <h1 className="font-serif text-3xl text-text-primary md:text-4xl">Portfolio</h1>
@@ -119,7 +119,7 @@ export default function PortfolioPage() {
             ))}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

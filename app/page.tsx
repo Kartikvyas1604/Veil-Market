@@ -19,6 +19,7 @@ export default function Home() {
     <div className="relative bg-paper">
       <GridBg className="fixed inset-0 h-full w-full opacity-30" />
 
+      <main id="main-content">
       {/* Hero */}
       <section className="relative overflow-hidden">
         <Scanline />
@@ -166,6 +167,7 @@ export default function Home() {
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

@@ -38,7 +38,15 @@ export default function RootLayout({
       lang="en"
       className={`${geist.variable} ${jetbrainsMono.variable} ${fraunces.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-sm focus:bg-veil-900 focus:px-4 focus:py-2 focus:text-sm focus:text-text-primary focus:outline-2 focus:outline-veil-500"
+        >
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

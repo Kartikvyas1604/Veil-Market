@@ -25,7 +25,7 @@ export default function OnboardingPage() {
     <div className="relative min-h-screen bg-veil-900">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
 
-      <div className="relative mx-auto max-w-lg px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
+      <main id="main-content" className="relative mx-auto max-w-lg px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         <div className="text-center">
           {/* Header */}
           <div className="mb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
             </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

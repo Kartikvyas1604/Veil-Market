@@ -8,7 +8,7 @@ export default function InstitutionalPage() {
     <div className="relative min-h-screen bg-veil-900">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
 
-      <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
+      <main id="main-content" className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         {/* Header */}
         <div className="mb-12 stagger-enter" style={{ animationDelay: "0ms" }}>
           <span className="mb-3 inline-block font-mono text-[10px] tracking-[0.3em] text-text-muted uppercase">
@@ -90,7 +90,7 @@ export default function InstitutionalPage() {
             ))}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
