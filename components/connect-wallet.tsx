@@ -139,11 +139,16 @@ export function ConnectWallet({ className }: { className?: string }) {
           <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-sm border border-border-strong bg-surface-raised shadow-lg">
             <div className="p-2">
               <button
-                onClick={() => {
-                  disconnect();
-                  setShowDropdown(false);
+                onClick={async () => {
+                  try {
+                    disconnect();
+                    await fetch("/api/auth/signout", { method: "POST" });
+                  } finally {
+                    setShowDropdown(false);
+                    window.location.reload();
+                  }
                 }}
-                className="flex w-full rounded-sm px-2 py-2 font-mono text-xs text-redaction transition-colors hover:bg-surface-elevated"
+                className="flex w-full rounded-sm px-2 py-2 font-mono text-xs text-red-400 transition-colors hover:bg-surface-elevated"
               >
                 Disconnect
               </button>
