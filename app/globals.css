@@ -104,10 +104,67 @@ body {
   animation: fade-in-up 500ms var(--ease-out-expo) both;
 }
 
+/* Reveal glow — applied to elements that just decrypted */
+.reveal-glow {
+  animation: pulse-accent 600ms ease-out 1;
+}
+
+/* Card interaction layer */
+.veil-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.veil-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(224, 247, 250, 0.02), transparent 60%);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+  pointer-events: none;
+}
+
+.veil-card:hover::before {
+  opacity: 1;
+}
+
+/* Encrypted text shimmer */
+@keyframes encrypted-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.encrypted-text {
+  background: linear-gradient(
+    90deg,
+    var(--color-veil-sealed) 0%,
+    var(--color-veil-text-muted) 50%,
+    var(--color-veil-sealed) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: encrypted-shimmer 3s ease-in-out infinite;
+}
+
+/* Focus visible ring override for dark theme */
+*:focus-visible {
+  outline: 2px solid rgba(224, 247, 250, 0.5);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stagger-enter {
     animation: none;
     opacity: 1;
+  }
+  .reveal-glow {
+    animation: none;
+  }
+  .encrypted-text {
+    animation: none;
   }
   @keyframes cipher-glow {
     0%, 100% { opacity: 1; }
@@ -120,5 +177,9 @@ body {
   }
   @keyframes tick-roll {
     0% { transform: none; opacity: 1; }
+  }
+  @keyframes encrypted-shimmer {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 0; }
   }
 }

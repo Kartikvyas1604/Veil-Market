@@ -9,6 +9,7 @@ interface CipherTextProps {
   duration?: number;
   className?: string;
   onComplete?: () => void;
+  glowOnReveal?: boolean;
 }
 
 export function CipherText({
@@ -17,10 +18,12 @@ export function CipherText({
   duration = 1000,
   className,
   onComplete,
+  glowOnReveal = false,
 }: CipherTextProps) {
   const [display, setDisplay] = useState(() =>
-    isRevealing ? text : Array(text.length).fill("█").join("")
+    isRevealing ? text : text.replace(/./g, (c) => (c === " " ? " " : "█"))
   );
+  const [revealed, setRevealed] = useState(false);
   const frameRef = useRef<number>(0);
   const prefersReduced = useRef(false);
 
@@ -32,6 +35,7 @@ export function CipherText({
   const scramble = useCallback(() => {
     if (prefersReduced.current) {
       setDisplay(text);
+      setRevealed(true);
       onComplete?.();
       return;
     }
@@ -57,6 +61,7 @@ export function CipherText({
         frameRef.current = requestAnimationFrame(tick);
       } else {
         setDisplay(text);
+        setRevealed(true);
         onComplete?.();
       }
     };
@@ -69,13 +74,18 @@ export function CipherText({
       scramble();
     } else {
       setDisplay(text.replace(/./g, (c) => (c === " " ? " " : "█")));
+      setRevealed(false);
     }
     return () => cancelAnimationFrame(frameRef.current);
   }, [isRevealing, scramble, text]);
 
   return (
     <span
-      className={`font-mono tabular-nums ${className ?? ""}`}
+      className={`font-mono tabular-nums inline-block transition-all duration-300 ${
+        glowOnReveal && revealed
+          ? "text-veil-accent drop-shadow-[0_0_8px_rgba(224,247,250,0.3)]"
+          : ""
+      } ${className ?? ""}`}
       aria-label={isRevealing ? text : "Encrypted"}
     >
       {display}
