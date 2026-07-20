@@ -6,6 +6,7 @@ import { GridBg } from "@/components/grid-bg";
 import { Scanline } from "@/components/scanline";
 import { StatsBar } from "@/components/stats-bar";
 import { MarketCard } from "@/components/market-card";
+import { RecentActivity } from "@/components/recent-activity";
 import { getLiveMarkets, markets } from "@/lib/markets";
 
 const featuredMarkets = getLiveMarkets().slice(0, 4);
@@ -137,6 +138,52 @@ export default function Home() {
             >
               View all markets →
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Activity */}
+      <section className="relative border-t border-veil-border">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div>
+              <h2
+                className="mb-6 font-serif text-2xl text-veil-text-bright md:text-3xl stagger-enter"
+                style={{ animationDelay: "100ms" }}
+              >
+                Recent Activity
+              </h2>
+              <RecentActivity />
+            </div>
+            <div
+              className="flex flex-col justify-center rounded-lg border border-veil-border bg-veil-surface/30 p-8 stagger-enter"
+              style={{ animationDelay: "200ms" }}
+            >
+              <div className="mb-4 font-mono text-[10px] tracking-[0.2em] text-veil-text-muted uppercase">
+                Protocol Status
+              </div>
+              <div className="space-y-4">
+                {[
+                  { label: "Encryption", status: "Active", color: "text-veil-success" },
+                  { label: "HE Computation", status: "Online", color: "text-veil-success" },
+                  { label: "Settlement Oracle", status: "Awaiting", color: "text-veil-accent" },
+                  { label: "Network", status: "Avalanche C-Chain", color: "text-veil-text-dim" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-veil-text-muted">{item.label}</span>
+                    <span className={`font-mono text-xs ${item.color}`}>{item.status}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 pt-4 border-t border-veil-border">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-veil-success animate-pulse" />
+                  <span className="font-mono text-[10px] text-veil-text-muted">
+                    All systems operational
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
