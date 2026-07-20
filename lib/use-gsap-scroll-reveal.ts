@@ -52,7 +52,7 @@ export function useGsapScrollReveal<T extends HTMLElement>(
     return () => {
       tl.kill();
     };
-  }, []);
+  }, [end, from, stagger, start, to, toggleActions]);
 
   return ref;
 }

@@ -5,13 +5,13 @@ import Link from "next/link";
 import { GridBg } from "@/components/grid-bg";
 import { Scanline } from "@/components/scanline";
 import { StatsBar } from "@/components/stats-bar";
-import { MarketCard } from "@/components/market-card";
+import { MarketCard, type CardMarket } from "@/components/market-card";
 import { RecentActivity } from "@/components/recent-activity";
 import { Footer } from "@/components/footer";
 import { getMarkets } from "@/lib/actions/markets";
 import type { MarketWithOdds } from "@/lib/supabase";
 
-function mapToCardMarket(m: MarketWithOdds) {
+function mapToCardMarket(m: MarketWithOdds): CardMarket {
   return {
     id: m.market_id.toString(),
     question: m.question,
@@ -28,10 +28,12 @@ function mapToCardMarket(m: MarketWithOdds) {
 export default function Home() {
   const [markets, setMarkets] = useState<MarketWithOdds[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     getMarkets()
       .then(setMarkets)
+      .catch(() => setLoadError("Markets could not be loaded. Check your connection and try again."))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -148,6 +150,11 @@ export default function Home() {
               <div className="flex items-center justify-center py-20">
                 <span className="font-mono text-sm text-text-muted animate-pulse">Loading markets...</span>
               </div>
+            ) : loadError ? (
+              <div className="flex flex-col items-center justify-center border border-red-400/30 bg-red-400/5 py-20 text-center">
+                <p className="font-serif text-lg text-text-secondary">Unable to load markets</p>
+                <p className="mt-2 font-mono text-xs text-text-muted">{loadError}</p>
+              </div>
             ) : cardMarkets.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-border rounded-sm">
                 <div className="mb-4 font-mono text-3xl text-text-muted">∅</div>
@@ -159,11 +166,11 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
                 {leadMarket && (
-                  <MarketCard key={leadMarket.id} market={leadMarket as any} index={0} featured />
+                  <MarketCard key={leadMarket.id} market={leadMarket} index={0} featured />
                 )}
                 <div className="flex flex-col gap-4">
                   {restMarkets.map((market, i) => (
-                    <MarketCard key={market.id} market={market as any} index={i + 1} />
+                    <MarketCard key={market.id} market={market} index={i + 1} />
                   ))}
                 </div>
               </div>

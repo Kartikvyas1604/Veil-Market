@@ -215,7 +215,6 @@ contract VeilMarket is Ownable, Pausable {
         require(status == MarketStatus.Active, "Market not active");
         require(block.timestamp < resolutionTime, "Market expired");
         require(side == 1 || side == 2, "Invalid side (1=YES, 2=NO)");
-        require(registry.isUserRegistered(msg.sender), "User not registered");
 
         // Verify nullifier uniqueness (prevents double-spending)
         bytes32 nullifier = bytes32(publicSignals[4]);

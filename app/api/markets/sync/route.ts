@@ -4,9 +4,14 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { marketId, contractAddress, question, category, resolutionTime, minBet, maxBet, creatorAddress } = body;
+    const { marketId, contractAddress, question, category, resolutionTime, minBet, maxBet } = body;
 
-    if (!marketId || !contractAddress) {
+    if (!Number.isSafeInteger(Number(marketId)) || Number(marketId) < 0 ||
+      typeof contractAddress !== "string" || !/^0x[a-fA-F0-9]{40}$/.test(contractAddress) ||
+      typeof question !== "string" || !question.trim() ||
+      typeof category !== "string" || !category ||
+      !Number.isFinite(Number(resolutionTime)) ||
+      !Number.isFinite(Number(minBet)) || !Number.isFinite(Number(maxBet))) {
       return NextResponse.json({ error: "Missing on-chain data" }, { status: 400 });
     }
 
@@ -14,7 +19,7 @@ export async function POST(request: Request) {
 
     const { data: newMarket, error: insertError } = await supabase
       .from("markets")
-      .insert({
+      .upsert({
         market_id: parseInt(marketId, 10),
         contract_address: contractAddress.toLowerCase(),
         question: question.trim(),
@@ -24,7 +29,7 @@ export async function POST(request: Request) {
         max_bet: parseFloat(maxBet),
         status: "active",
         outcome: "none",
-      })
+      }, { onConflict: "market_id" })
       .select()
       .single();
 

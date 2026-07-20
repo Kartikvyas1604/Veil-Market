@@ -47,6 +47,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (siweMessage.domain !== DOMAIN) {
+      return NextResponse.json(
+        { error: "Signature domain does not match this application" },
+        { status: 401 }
+      );
+    }
+
     // Create Supabase client
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

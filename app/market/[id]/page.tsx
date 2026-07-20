@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { formatNumber, getMarketUrgency } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
@@ -13,7 +13,15 @@ import { getMarket } from "@/lib/actions/markets";
 import { supabase } from "@/lib/supabase";
 import type { MarketWithOdds } from "@/lib/supabase";
 import { notFound } from "next/navigation";
-import { useAccount, useWalletClient, useWriteContract, usePublicClient } from "wagmi";
+import { useAccount, useWriteContract, usePublicClient } from "wagmi";
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error && "shortMessage" in error && typeof error.shortMessage === "string") {
+    return error.shortMessage;
+  }
+  return fallback;
+}
 
 export default function MarketDetailPage({
   params,
@@ -21,15 +29,17 @@ export default function MarketDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const marketId = parseInt(id, 10);
+  const marketId = Number(id);
+
+  if (!Number.isSafeInteger(marketId) || marketId < 0) {
+    notFound();
+  }
 
   const [market, setMarket] = useState<MarketWithOdds | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load initial data
   useEffect(() => {
-    if (isNaN(marketId)) return;
-
     async function load() {
       const data = await getMarket(marketId);
       if (data) setMarket(data);
@@ -40,8 +50,6 @@ export default function MarketDetailPage({
 
   // Subscribe to real-time odds updates
   useEffect(() => {
-    if (isNaN(marketId)) return;
-
     const channel = supabase
       .channel(`market-${marketId}-odds`)
       .on(
@@ -100,30 +108,21 @@ export default function MarketDetailPage({
   }, [marketId]);
 
   const { address } = useAccount();
-  const { data: walletClient } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
 
-  const [isRevealingLocal, setIsRevealingLocal] = useState(false);
-  const [showFlash, setShowFlash] = useState(false);
   const [betStep, setBetStep] = useState<"idle" | "encrypting" | "proof" | "sealed">("idle");
   const [selectedSide, setSelectedSide] = useState<1 | 2>(1); // 1 = YES, 2 = NO
   const [betAmount, setBetAmount] = useState("100");
   const [betError, setBetError] = useState("");
 
-  // Legacy manual reveal button simulation
-  const handleReveal = useCallback(() => {
-    setIsRevealingLocal(true);
-    setTimeout(() => {
-      setShowFlash(true);
-      setTimeout(() => setShowFlash(false), 300);
-      setIsRevealingLocal(false);
-    }, 1000);
-  }, []);
-
   const handlePlaceBet = async () => {
-    if (!address || !walletClient || !market) {
+    if (!address || !market) {
       setBetError("Please connect your wallet first");
+      return;
+    }
+    if (!publicClient) {
+      setBetError("Wallet network is still initializing. Please try again.");
       return;
     }
     
@@ -132,17 +131,20 @@ export default function MarketDetailPage({
     
     try {
       // Import dynamically to avoid heavy crypto bundle on initial load if possible
-      const { generateBetProof, deriveKeyFromSignature } = await import("@/lib/eerc");
+      const { generateBetProof } = await import("@/lib/eerc");
       
       // Derive dummy key or real key depending on auth step (for speedrun we just use a fixed dummy public key for the auditor)
       const dummyPublicKey = { x: 0n, y: 1n };
       
-      const amountFloat = parseFloat(betAmount);
-      if (isNaN(amountFloat) || amountFloat <= 0) {
+      const { erc20Abi, parseUnits } = await import("viem");
+      let usdcAmount: bigint;
+      try {
+        usdcAmount = parseUnits(betAmount.trim(), 6);
+      } catch {
         throw new Error("Invalid bet amount");
       }
-      
-      const betAmountWei = BigInt(Math.floor(amountFloat * 1e18));
+      if (usdcAmount <= 0n) throw new Error("Bet amount must be greater than zero");
+      const betAmountWei = parseUnits(betAmount.trim(), 18);
       
       setBetStep("proof");
       
@@ -162,9 +164,6 @@ export default function MarketDetailPage({
       // Now send the transaction
       const { VEIL_MARKET_ABI } = await import("@/lib/contracts");
       const FUJI_USDC = "0x5425890298aed601595a70AB815c96711a31Bc65";
-      const { erc20Abi } = await import("viem");
-      
-      const usdcAmount = BigInt(Math.floor(amountFloat * 1e6)); // 6 decimals for USDC
       
       // 1. Approve USDC
       setBetStep("encrypting"); // Using encrypting as a generic loading state for approval
@@ -177,9 +176,7 @@ export default function MarketDetailPage({
       });
       console.log("USDC Approved, waiting for receipt:", approveTx);
       
-      if (publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash: approveTx });
-      }
+      await publicClient.waitForTransactionReceipt({ hash: approveTx });
 
       setBetStep("proof");
       
@@ -199,11 +196,11 @@ export default function MarketDetailPage({
         ]
       });
       
-      console.log("Bet transaction sent!", txHash);
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
       setBetStep("sealed");
-    } catch (e: any) {
-      console.error(e);
-      setBetError(e.shortMessage || e.message || "Failed to place bet. Did you reject?");
+    } catch (error) {
+      console.error(error);
+      setBetError(getErrorMessage(error, "Failed to place bet. The transaction may have been rejected."));
       setBetStep("idle");
     }
   };
@@ -230,14 +227,6 @@ export default function MarketDetailPage({
   return (
     <div className="relative min-h-screen bg-veil-900">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
-
-      {/* Reveal flash */}
-      {showFlash && (
-        <div
-          className="fixed inset-0 z-50 pointer-events-none bg-text-primary/5"
-          style={{ animation: "contrast-snap 300ms ease-out forwards" }}
-        />
-      )}
 
       <main id="main-content" className="relative mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-12 lg:px-8">
         {/* Breadcrumb */}
@@ -408,7 +397,7 @@ export default function MarketDetailPage({
                   <div className="flex items-baseline justify-between">
                     <span className="font-mono text-sm text-text-muted">Direction</span>
                     <span className="font-mono text-lg font-bold text-text-primary">
-                      <CipherText text={market!.outcome === "yes" ? "YES" : market!.outcome === "no" ? "NO" : "DISPUTED"} isRevealing={isRevealingLocal || isResolved} duration={1000} />
+                      <CipherText text={market!.outcome === "yes" ? "YES" : market!.outcome === "no" ? "NO" : "DISPUTED"} isRevealing={isResolved} duration={1000} />
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">

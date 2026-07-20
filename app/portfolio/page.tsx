@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { SealBadge } from "@/components/seal-badge";
 import { getUserPositionsWithMarkets } from "@/lib/actions/markets";
@@ -82,7 +82,7 @@ export default function PortfolioPage() {
           <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border rounded-sm">
             <div className="mb-4 font-mono text-4xl text-text-muted">∅</div>
             <p className="font-serif text-lg text-text-secondary">No positions found</p>
-            <p className="mt-1 font-mono text-xs text-text-muted">You haven't placed any encrypted bets yet.</p>
+            <p className="mt-1 font-mono text-xs text-text-muted">You haven&apos;t placed any encrypted bets yet.</p>
             <Link href="/markets" className="mt-6 font-mono text-xs text-text-primary underline hover:text-veil-500">
               Browse Markets →
             </Link>

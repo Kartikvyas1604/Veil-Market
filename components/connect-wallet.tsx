@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { avalanche, avalancheFuji } from "viem/chains";
 import { cn } from "@/lib/utils";
 
 const supportedChains = [avalanche, avalancheFuji] as const;
+
+const subscribeToHydration = () => () => {};
 
 export function ConnectWallet({ className }: { className?: string }) {
   const { address, isConnected, chain } = useAccount();
@@ -15,6 +17,9 @@ export function ConnectWallet({ className }: { className?: string }) {
   const { switchChain } = useSwitchChain();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showChainSelect, setShowChainSelect] = useState(false);
+  // Wagmi restores persisted wallet state only in the browser. Use the server
+  // snapshot for the first client render so its markup is identical to SSR.
+  const hasHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
 
   const handleConnect = useCallback(
     (connector: (typeof connectors)[number]) => {
@@ -32,7 +37,7 @@ export function ConnectWallet({ className }: { className?: string }) {
     [switchChain]
   );
 
-  if (!isConnected) {
+  if (!hasHydrated || !isConnected) {
     return (
       <div className="relative">
         <button
@@ -43,9 +48,9 @@ export function ConnectWallet({ className }: { className?: string }) {
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2",
             className
           )}
-          disabled={isPending}
+          disabled={!hasHydrated || isPending}
         >
-          {isPending ? "Connecting..." : "Connect Wallet"}
+          {hasHydrated && isPending ? "Connecting..." : "Connect Wallet"}
         </button>
 
         {showDropdown && (

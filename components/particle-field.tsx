@@ -6,15 +6,20 @@ import * as THREE from "three";
 
 const COUNT = 120;
 
+function pseudoRandom(index: number, seed: number): number {
+  const value = Math.sin(index * 12.9898 + seed * 78.233) * 43758.5453;
+  return value - Math.floor(value);
+}
+
 function Particles() {
   const ref = useRef<THREE.Points>(null!);
 
   const geometry = useMemo(() => {
     const pos = new Float32Array(COUNT * 3);
     for (let i = 0; i < COUNT; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 40;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      pos[i * 3] = (pseudoRandom(i, 1) - 0.5) * 40;
+      pos[i * 3 + 1] = (pseudoRandom(i, 2) - 0.5) * 40;
+      pos[i * 3 + 2] = (pseudoRandom(i, 3) - 0.5) * 20;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));

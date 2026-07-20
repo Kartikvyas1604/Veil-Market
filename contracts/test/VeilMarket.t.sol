@@ -11,6 +11,7 @@ import {IVeilRegistry} from "../src/interfaces/IVeilRegistry.sol";
 import {IVeilBetVerifier} from "../src/interfaces/IVeilBetVerifier.sol";
 import {BabyJubJub} from "EncryptedERC/libraries/BabyJubJub.sol";
 import {Point, EGCT} from "EncryptedERC/types/Types.sol";
+import {ERC20Mock} from "openzeppelin-contracts/mocks/token/ERC20Mock.sol";
 
 /// @title VeilMarketTest
 /// @notice Integration tests for the VEIL market system
@@ -23,6 +24,7 @@ contract VeilMarketTest is Test {
     PassthroughBetVerifier verifier;
     VeilFactory factory;
     ThresholdDecryption decryption;
+    ERC20Mock usdc;
 
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
@@ -56,9 +58,10 @@ contract VeilMarketTest is Test {
 
         // ── Deploy verifier ────────────────────────────────────────────
         verifier = new PassthroughBetVerifier();
+        usdc = new ERC20Mock();
 
         // ── Deploy factory ─────────────────────────────────────────────
-        factory = new VeilFactory(address(registry), address(verifier));
+        factory = new VeilFactory(address(registry), address(verifier), address(usdc));
 
         // ── Deploy threshold decryption ────────────────────────────────
         address[] memory members = new address[](3);

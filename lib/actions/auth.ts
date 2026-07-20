@@ -55,7 +55,7 @@ export async function verifySiweMessage(
     const siweMessage = new SiweMessage(message);
 
     // Verify the message
-    const { data: verification, error: verifyError } =
+    const { error: verifyError } =
       await siweMessage.verify({ signature }, { suppressExceptions: false });
 
     if (verifyError) {

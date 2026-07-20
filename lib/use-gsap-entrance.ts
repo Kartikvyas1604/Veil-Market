@@ -43,7 +43,7 @@ export function useGsapEntrance<T extends HTMLElement>(
         { opacity: 1, y: 0, duration: 0.7, ease: "power2.out", ...to }
       );
     }
-  }, []);
+  }, [from, stagger, to]);
 
   return ref;
 }

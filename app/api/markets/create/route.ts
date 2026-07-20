@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase";
+
+const VALID_CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
+
+function getCommitteeAddresses(): string[] | null {
+  const committee = (process.env.COMMITTEE_ADDRESSES ?? "")
+    .split(",")
+    .map((address) => address.trim().toLowerCase())
+    .filter((address) => /^0x[a-f0-9]{40}$/.test(address));
+  const uniqueCommittee = [...new Set(committee)];
+  return uniqueCommittee.length >= 2 ? uniqueCommittee : null;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +23,7 @@ export async function POST(request: NextRequest) {
     if (sessionCookie) {
       try {
         sessionAddress = JSON.parse(sessionCookie).address;
-      } catch (e) {}
+      } catch {}
     }
 
     const finalAddress = sessionAddress || creatorAddress;
@@ -32,7 +42,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Question must be 280 characters or less" }, { status: 400 });
     }
 
-    const VALID_CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
     if (!VALID_CATEGORIES.includes(category)) {
       return NextResponse.json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(", ")}` }, { status: 400 });
     }
@@ -60,7 +69,17 @@ export async function POST(request: NextRequest) {
     const minBetWei = BigInt(Math.floor(minBetNum * 1e18)).toString();
     const maxBetWei = BigInt(Math.floor(maxBetNum * 1e18)).toString();
     const factoryAddress = process.env.NEXT_PUBLIC_VEIL_FACTORY_ADDRESS;
-    const committeeAddress = process.env.COMMITTEE_ADDRESS || finalAddress;
+    const committee = getCommitteeAddresses();
+
+    if (!factoryAddress || !/^0x[a-fA-F0-9]{40}$/.test(factoryAddress)) {
+      return NextResponse.json({ error: "Market factory is not configured." }, { status: 503 });
+    }
+    if (!committee) {
+      return NextResponse.json(
+        { error: "Market creation is unavailable until COMMITTEE_ADDRESSES contains at least two distinct committee wallets." },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -78,10 +97,7 @@ export async function POST(request: NextRequest) {
         resolutionTime: resolutionTimestampSeconds,
         minBet: minBetWei,
         maxBet: maxBetWei,
-        committee: [
-          "0xd5b9Ed9E3c7b72e97fDbe8De818B072901eEB098", // Deployer = committee member 1
-          "0xd5b9Ed9E3c7b72e97fDbe8De818B072901eEB098", // Deployer = committee member 2 (testnet uses same key)
-        ],
+        committee,
       },
     });
   } catch (error) {

@@ -2,7 +2,6 @@
 
 import { encodeFunctionData } from "viem";
 import { supabase } from "@/lib/supabase";
-import { VEIL_MARKET_ABI } from "@/lib/contracts";
 
 /**
  * SECURITY INVARIANT:
@@ -35,16 +34,16 @@ export interface BetValidationRequest {
 export interface BetValidationResponse {
   valid: boolean;
   error?: string;
-  calldata?: `0x${string}`;
   marketAddress?: string;
 }
 
 /**
- * Validate a bet proof and prepare calldata for on-chain submission.
+ * Validate a bet proof before on-chain submission.
  *
  * This runs server-side to catch malformed proofs BEFORE they waste gas.
- * The calldata returned here is what the user's wallet will sign and send
- * directly to the blockchain — the server never broadcasts it.
+ * The wallet builds the final calldata client-side. The current market
+ * contract takes a payment amount alongside the encrypted payload, and that
+ * value must not be sent through this privacy-preserving server action.
  */
 export async function validateBetProof(
   request: BetValidationRequest
@@ -60,6 +59,9 @@ export async function validateBetProof(
     // 2. Validate public signals structure
     if (publicSignals.length !== 5) {
       return { valid: false, error: "Invalid public signals. Expected 5 elements." };
+    }
+    if (proofB.length !== 2 || proofB.some((point) => point.length !== 2)) {
+      return { valid: false, error: "Invalid proof B. Expected two coordinate pairs." };
     }
 
     // 3. Validate proof points are non-zero
@@ -94,29 +96,8 @@ export async function validateBetProof(
       };
     }
 
-    // 6. Encode the placeBet calldata using viem
-    // This is the actual ABI-encoded calldata the wallet will sign.
-    // We encode it server-side to validate the structure, but the user's
-    // wallet signs and broadcasts it — the server never sees the private key.
-    const calldata = encodeFunctionData({
-      abi: VEIL_MARKET_ABI,
-      functionName: "placeBet",
-      args: [
-        [proofA[0], proofA[1]] as [bigint, bigint],
-        [[proofB[0][0], proofB[0][1]], [proofB[1][0], proofB[1][1]]] as [[bigint, bigint], [bigint, bigint]],
-        [proofC[0], proofC[1]] as [bigint, bigint],
-        [publicSignals[0], publicSignals[1], publicSignals[2], publicSignals[3], publicSignals[4]] as [bigint, bigint, bigint, bigint, bigint],
-        side,
-        {
-          c1: { x: encryptedBet.c1.x, y: encryptedBet.c1.y },
-          c2: { x: encryptedBet.c2.x, y: encryptedBet.c2.y },
-        },
-      ],
-    });
-
     return {
       valid: true,
-      calldata,
       marketAddress: market.contract_address,
     };
   } catch (error) {

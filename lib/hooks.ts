@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useAccount, usePublicClient } from "wagmi";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import type { DbMarketActivity } from "@/lib/supabase";
 
 interface OddsData {
   yesOdds: number;
@@ -27,6 +27,10 @@ interface MarketWithOdds {
   totalBets: number;
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+}
+
 /**
  * Hook to subscribe to real-time odds updates via Supabase Realtime
  */
@@ -41,8 +45,17 @@ export function useOddsUpdates(marketId: number) {
         p_market_id: marketId,
       });
 
+      if (error) console.error("Failed to load odds:", error.message);
       if (data && data.length > 0) {
-        setOdds(data[0]);
+        const row = asRecord(data[0]);
+        setOdds({
+          yesOdds: Number(row.yes_odds),
+          noOdds: Number(row.no_odds),
+          yesTotal: Number(row.yes_total),
+          noTotal: Number(row.no_total),
+          totalBets: Number(row.total_bets),
+          publishedAt: typeof row.published_at === "string" ? row.published_at : null,
+        });
       }
       setLoading(false);
     };
@@ -62,14 +75,14 @@ export function useOddsUpdates(marketId: number) {
         },
         (payload) => {
           if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-            const newOdds = payload.new as any;
+            const newOdds = asRecord(payload.new);
             setOdds({
-              yesOdds: newOdds.yes_odds,
-              noOdds: newOdds.no_odds,
-              yesTotal: newOdds.yes_total,
-              noTotal: newOdds.no_total,
-              totalBets: newOdds.total_bets,
-              publishedAt: newOdds.published_at,
+              yesOdds: Number(newOdds.yes_odds),
+              noOdds: Number(newOdds.no_odds),
+              yesTotal: Number(newOdds.yes_total),
+              noTotal: Number(newOdds.no_total),
+              totalBets: Number(newOdds.total_bets),
+              publishedAt: typeof newOdds.published_at === "string" ? newOdds.published_at : null,
             });
           }
         }
@@ -95,21 +108,25 @@ export function useMarkets() {
     const fetchMarkets = async () => {
       const { data, error } = await supabase.rpc("get_markets_with_odds");
 
+      if (error) console.error("Failed to load markets:", error.message);
       if (data) {
         setMarkets(
-          data.map((m: any) => ({
-            marketId: m.market_id,
-            contractAddress: m.contract_address,
-            question: m.question,
-            category: m.category,
-            resolutionTime: m.resolution_time,
-            status: m.status,
-            outcome: m.outcome,
-            yesOdds: m.yes_odds,
-            noOdds: m.no_odds,
-            totalPool: m.total_pool,
-            totalBets: m.total_bets,
-          }))
+          data.map((item: unknown) => {
+            const market = asRecord(item);
+            return {
+              marketId: Number(market.market_id),
+              contractAddress: String(market.contract_address),
+              question: String(market.question),
+              category: String(market.category),
+              resolutionTime: String(market.resolution_time),
+              status: String(market.status),
+              outcome: String(market.outcome),
+              yesOdds: Number(market.yes_odds),
+              noOdds: Number(market.no_odds),
+              totalPool: Number(market.total_pool),
+              totalBets: Number(market.total_bets),
+            };
+          })
         );
       }
       setLoading(false);
@@ -158,7 +175,7 @@ export function useMarkets() {
  * Hook to get activity feed for a market
  */
 export function useMarketActivity(marketId: number) {
-  const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<DbMarketActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -170,8 +187,9 @@ export function useMarketActivity(marketId: number) {
         .order("created_at", { ascending: false })
         .limit(50);
 
+      if (error) console.error("Failed to load market activity:", error.message);
       if (data) {
-        setActivities(data);
+        setActivities(data as DbMarketActivity[]);
       }
       setLoading(false);
     };
@@ -189,7 +207,7 @@ export function useMarketActivity(marketId: number) {
           filter: `market_id=eq.${marketId}`,
         },
         (payload) => {
-          setActivities((prev) => [payload.new, ...prev].slice(0, 50));
+          setActivities((prev) => [payload.new as DbMarketActivity, ...prev].slice(0, 50));
         }
       )
       .subscribe();

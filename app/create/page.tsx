@@ -15,6 +15,14 @@ const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", 
 
 type Step = "compose" | "review" | "confirming" | "done";
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error && "shortMessage" in error && typeof error.shortMessage === "string") {
+    return error.shortMessage;
+  }
+  return fallback;
+}
+
 export default function CreateMarketPage() {
   const router = useRouter();
   const { address } = useAccount();
@@ -30,21 +38,23 @@ export default function CreateMarketPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdMarket, setCreatedMarket] = useState<{ question: string; pendingId: string } | null>(null);
-
-  // Min date: tomorrow
-  const minDate = new Date(Date.now() + 86400000).toISOString().split("T")[0];
-  // Max date: 2 years
-  const maxDate = new Date(Date.now() + 2 * 365 * 86400000).toISOString().split("T")[0];
+  const [dateBounds] = useState(() => {
+    const now = Date.now();
+    return {
+      min: new Date(now + 86_400_000).toISOString().split("T")[0],
+      max: new Date(now + 2 * 365 * 86_400_000).toISOString().split("T")[0],
+    };
+  });
 
   const charCount = question.length;
   const charLimit = 280;
   const isQuestionValid = question.trim().length >= 10;
-  const isDateValid = resolutionDate && new Date(resolutionDate).getTime() > Date.now();
+  const isDateProvided = resolutionDate.length > 0;
 
   function validate(): string {
     if (!isQuestionValid) return "Question must be at least 10 characters.";
     if (charCount > charLimit) return `Question exceeds ${charLimit} character limit.`;
-    if (!isDateValid) return "Resolution date must be in the future.";
+    if (!isDateProvided || new Date(resolutionDate).getTime() <= Date.now()) return "Resolution date must be in the future.";
     if (parseFloat(minBet) <= 0) return "Min bet must be greater than 0.";
     if (parseFloat(maxBet) <= parseFloat(minBet)) return "Max bet must be greater than min bet.";
     if (!address) return "You must connect your wallet first.";
@@ -62,6 +72,12 @@ export default function CreateMarketPage() {
   }
 
   async function handleConfirm() {
+    if (!address) {
+      setError("You must connect your wallet first.");
+      setStep("compose");
+      return;
+    }
+
     setIsSubmitting(true);
     setStep("confirming");
 
@@ -112,13 +128,12 @@ export default function CreateMarketPage() {
             data: log.data,
             topics: log.topics,
           });
-          if (decoded.eventName === 'MarketCreated') {
-            const args = decoded.args as any;
-            realMarketId = args.marketId.toString();
-            realContractAddress = args.marketContract;
+          if (decoded.eventName === "MarketCreated" && decoded.args.marketId !== undefined && decoded.args.marketContract) {
+            realMarketId = decoded.args.marketId.toString();
+            realContractAddress = decoded.args.marketContract;
             break;
           }
-        } catch (e) {
+        } catch {
           // ignore logs that don't match our ABI
         }
       }
@@ -139,7 +154,6 @@ export default function CreateMarketPage() {
           resolutionTime: data.contractParams.resolutionTime * 1000,
           minBet,
           maxBet,
-          creatorAddress: address
         }),
       });
 
@@ -150,9 +164,9 @@ export default function CreateMarketPage() {
 
       setCreatedMarket({ question: data.market.question, pendingId: realMarketId });
       setStep("done");
-    } catch (e: any) {
-      console.error(e);
-      setError(e.shortMessage || e.message || "Transaction failed or rejected.");
+    } catch (error) {
+      console.error(error);
+      setError(getErrorMessage(error, "Transaction failed or was rejected."));
       setStep("compose");
     } finally {
       setIsSubmitting(false);
@@ -327,8 +341,8 @@ export default function CreateMarketPage() {
                 <input
                   id="resolution-date"
                   type="date"
-                  min={minDate}
-                  max={maxDate}
+                  min={dateBounds.min}
+                  max={dateBounds.max}
                   value={resolutionDate}
                   onChange={(e) => setResolutionDate(e.target.value)}
                   className="rounded-sm border border-border bg-surface-elevated px-4 py-2.5 font-mono text-sm text-text-primary outline-none transition-colors duration-150 focus:border-text-muted w-full md:w-auto"

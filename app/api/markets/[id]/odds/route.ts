@@ -15,14 +15,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const marketId = parseInt(id, 10);
+  const marketId = Number(id);
 
-  if (isNaN(marketId) || marketId < 0) {
+  if (!Number.isSafeInteger(marketId) || marketId < 0) {
     return NextResponse.json({ error: "Invalid market ID" }, { status: 400 });
   }
 
   const { searchParams } = new URL(request.url);
-  const limitParam = parseInt(searchParams.get("limit") || "50", 10);
+  const requestedLimit = Number(searchParams.get("limit") ?? "50");
+  const limitParam = Number.isSafeInteger(requestedLimit) ? requestedLimit : 50;
   const limit = Math.min(Math.max(1, limitParam), 200);
 
   try {

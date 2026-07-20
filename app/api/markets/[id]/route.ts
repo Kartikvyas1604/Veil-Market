@@ -12,9 +12,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const marketId = parseInt(id, 10);
+  const marketId = Number(id);
 
-  if (isNaN(marketId) || marketId < 0) {
+  if (!Number.isSafeInteger(marketId) || marketId < 0) {
     return NextResponse.json({ error: "Invalid market ID" }, { status: 400 });
   }
 

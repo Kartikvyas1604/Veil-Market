@@ -25,7 +25,7 @@
  * The server never sees plaintext amounts.
  */
 
-import { type WalletClient, type PublicClient } from "viem";
+import { type WalletClient } from "viem";
 import { type Point, type EGCT } from "./types";
 
 // BabyJubJub curve parameters
@@ -87,14 +87,6 @@ function scalarMultiply(point: Point, scalar: bigint): Point {
   }
 
   return result;
-}
-
-function negate(point: Point): Point {
-  return { x: mod(-point.x, Q), y: point.y };
-}
-
-function pointSub(p1: Point, p2: Point): Point {
-  return pointAdd(p1, negate(p2));
 }
 
 // ─── Key Generation ──────────────────────────────────────────────
@@ -203,6 +195,7 @@ export async function generateBetProof(
   publicKey: Point,
   auditorPublicKey: Point
 ): Promise<BetProof> {
+  void auditorPublicKey;
   // 1. Generate random nullifier to prevent double-spending
   const nullifierBytes = crypto.getRandomValues(new Uint8Array(32));
   const nullifier = "0x" + Array.from(nullifierBytes).map((b) => b.toString(16).padStart(2, "0")).join("");

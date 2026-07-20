@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
-import { MarketCard } from "@/components/market-card";
+import { MarketCard, type CardMarket } from "@/components/market-card";
 import { getMarkets } from "@/lib/actions/markets";
 import type { MarketWithOdds } from "@/lib/supabase";
 
@@ -16,7 +16,7 @@ const filters: { key: Filter; label: string }[] = [
 ];
 
 // Adapter to map DbMarket to the Market type expected by MarketCard
-function mapToCardMarket(dbMarket: MarketWithOdds) {
+function mapToCardMarket(dbMarket: MarketWithOdds): CardMarket {
   return {
     id: dbMarket.market_id.toString(),
     question: dbMarket.question,
@@ -34,14 +34,16 @@ export default function MarketsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [dbMarkets, setDbMarkets] = useState<MarketWithOdds[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     async function loadMarkets() {
       try {
         const data = await getMarkets();
         setDbMarkets(data);
-      } catch (err) {
-        console.error("Failed to load markets:", err);
+      } catch (error) {
+        console.error("Failed to load markets:", error);
+        setLoadError("Markets could not be loaded. Check your connection and try again.");
       } finally {
         setIsLoading(false);
       }
@@ -114,17 +116,22 @@ export default function MarketsPage() {
             <div className="mb-4 font-mono text-4xl text-text-muted animate-pulse">⧗</div>
             <p className="font-serif text-lg text-text-secondary">Syncing ledger...</p>
           </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center border border-red-400/30 bg-red-400/5 py-24 text-center">
+            <p className="font-serif text-lg text-text-secondary">Unable to load markets</p>
+            <p className="mt-2 font-mono text-xs text-text-muted">{loadError}</p>
+          </div>
         ) : filtered.length > 0 ? (
           <div className="space-y-4">
             {/* Lead market — featured */}
             {leadMarket && (
-              <MarketCard key={leadMarket.id} market={leadMarket as any} index={0} featured />
+              <MarketCard key={leadMarket.id} market={leadMarket} index={0} featured />
             )}
             {/* Rest in standard grid */}
             {restMarkets.length > 0 && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {restMarkets.map((market, i) => (
-                  <MarketCard key={market.id} market={market as any} index={i + 1} />
+                  <MarketCard key={market.id} market={market} index={i + 1} />
                 ))}
               </div>
             )}
