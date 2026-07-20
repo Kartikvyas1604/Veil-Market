@@ -33,9 +33,9 @@ export const avalancheFuji: Chain = {
 
 export const CONTRACTS = {
   fuji: {
-    veilFactory: "0x0000000000000000000000000000000000000000" as const,
-    registrar: "0x0000000000000000000000000000000000000000" as const,
-    thresholdDecryption: "0x0000000000000000000000000000000000000000" as const,
+    veilFactory: (process.env.NEXT_PUBLIC_VEIL_FACTORY_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    registrar: (process.env.NEXT_PUBLIC_REGISTRAR_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    thresholdDecryption: (process.env.NEXT_PUBLIC_THRESHOLD_DECRYPTION_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
   },
   mainnet: {
     veilFactory: "0x0000000000000000000000000000000000000000" as const,

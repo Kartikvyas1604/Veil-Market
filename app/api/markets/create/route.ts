@@ -78,7 +78,10 @@ export async function POST(request: NextRequest) {
         resolutionTime: resolutionTimestampSeconds,
         minBet: minBetWei,
         maxBet: maxBetWei,
-        committee: [committeeAddress],
+        committee: [
+        "0x81159939E8b6bB3a5160868f001bf52cb3a90A2b", // Mock committee member 1
+        "0x9b32402127264a2F7c94ceC16f272a2AFA6e257E", // Mock committee member 2
+      ],
       },
     });
   } catch (error) {

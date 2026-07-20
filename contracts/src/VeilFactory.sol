@@ -55,7 +55,7 @@ contract VeilFactory is IVeilFactory, Ownable {
         uint256 minBet,
         uint256 maxBet,
         address[] calldata committee
-    ) external override onlyOwner returns (address) {
+    ) external override returns (address) {
         require(resolutionTime > block.timestamp, "Resolution must be in the future");
         require(committee.length >= 2, "Committee must have at least 2 members");
 
