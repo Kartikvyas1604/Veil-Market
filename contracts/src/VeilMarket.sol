@@ -204,7 +204,7 @@ contract VeilMarket is Ownable, Pausable {
         uint256[5] calldata publicSignals,
         uint8 side,
         EGCT calldata encryptedBet
-    ) external whenNotPaused {
+    ) external payable whenNotPaused {
         // Preconditions
         require(status == MarketStatus.Active, "Market not active");
         require(block.timestamp < resolutionTime, "Market expired");

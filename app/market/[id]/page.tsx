@@ -173,6 +173,7 @@ export default function MarketDetailPage({
           selectedSide,
           betProof.encryptedBet
         ],
+        value: betAmountWei,
       });
       
       console.log("Bet transaction sent!", txHash);
