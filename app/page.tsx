@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CipherNoise } from "@/components/cipher-noise";
 import { GridBg } from "@/components/grid-bg";
+import { Scanline } from "@/components/scanline";
 import { StatsBar } from "@/components/stats-bar";
 import { MarketCard } from "@/components/market-card";
 import { getLiveMarkets, markets } from "@/lib/markets";
@@ -30,6 +31,8 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(224,247,250,0.04),transparent)]" />
           {/* Bottom fade */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-veil-bg to-transparent" />
+          {/* Scanline */}
+          <Scanline />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 pt-24 pb-20 md:px-6 md:pt-32 md:pb-24 lg:px-8">
