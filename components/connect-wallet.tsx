@@ -61,7 +61,7 @@ export function ConnectWallet({ className }: { className?: string }) {
                   className="flex w-full items-center gap-3 rounded-sm px-2 py-2.5 font-mono text-xs text-text-primary transition-colors hover:bg-surface-elevated"
                 >
                   {connector.icon && (
-                    <Image src={connector.icon} className="h-5 w-5" alt={connector.name} width={20} height={20} unoptimized />
+                    <Image src={connector.icon.trim()} className="h-5 w-5" alt={connector.name} width={20} height={20} unoptimized />
                   )}
                   {connector.name}
                 </button>
