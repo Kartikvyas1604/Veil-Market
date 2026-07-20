@@ -19,10 +19,13 @@ export default function MarketsPage() {
 
   const filtered =
     filter === "all"
-      ? markets
+      ? [...markets].sort((a, b) => b.totalPool - a.totalPool)
       : filter === "live"
-        ? getLiveMarkets()
+        ? [...getLiveMarkets()].sort((a, b) => b.totalPool - a.totalPool)
         : getResolvedMarkets();
+
+  const leadMarket = filtered[0];
+  const restMarkets = filtered.slice(1);
 
   return (
     <div className="relative min-h-screen bg-veil-900">
@@ -64,10 +67,19 @@ export default function MarketsPage() {
 
         {/* Market grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((market, i) => (
-              <MarketCard key={market.id} market={market} index={i} />
-            ))}
+          <div className="space-y-4">
+            {/* Lead market — featured */}
+            {leadMarket && (
+              <MarketCard key={leadMarket.id} market={leadMarket} index={0} featured />
+            )}
+            {/* Rest in standard grid */}
+            {restMarkets.length > 0 && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {restMarkets.map((market, i) => (
+                  <MarketCard key={market.id} market={market} index={i + 1} />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center">

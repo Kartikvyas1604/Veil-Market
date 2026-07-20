@@ -9,7 +9,10 @@ import { RecentActivity } from "@/components/recent-activity";
 import { Footer } from "@/components/footer";
 import { getLiveMarkets, markets } from "@/lib/markets";
 
-const featuredMarkets = getLiveMarkets().slice(0, 4);
+const liveMarkets = getLiveMarkets();
+const sortedByVolume = [...liveMarkets].sort((a, b) => b.totalPool - a.totalPool);
+const leadMarket = sortedByVolume[0];
+const restMarkets = sortedByVolume.slice(1, 4);
 const totalVolume = markets.reduce((sum, m) => sum + m.totalPool, 0);
 const activeMarkets = getLiveMarkets().length;
 const sealedPositions = 12847;
@@ -102,10 +105,17 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {featuredMarkets.map((market, i) => (
-              <MarketCard key={market.id} market={market} index={i} />
-            ))}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+            {/* Lead market — largest by volume */}
+            {leadMarket && (
+              <MarketCard key={leadMarket.id} market={leadMarket} index={0} featured />
+            )}
+            {/* Remaining markets */}
+            <div className="flex flex-col gap-4">
+              {restMarkets.map((market, i) => (
+                <MarketCard key={market.id} market={market} index={i + 1} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
