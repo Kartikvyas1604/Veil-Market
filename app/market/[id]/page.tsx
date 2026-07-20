@@ -4,6 +4,7 @@ import { use, useState, useCallback } from "react";
 import Link from "next/link";
 import { cn, formatNumber } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
+import { Scanline } from "@/components/scanline";
 import { CipherText } from "@/components/cipher-text";
 import { SealBadge } from "@/components/seal-badge";
 import { OddsTicker } from "@/components/odds-ticker";
@@ -27,14 +28,20 @@ export default function MarketDetailPage({
     market.status === "resolved"
   );
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
 
   const handleReveal = useCallback(() => {
     setIsDecrypting(true);
-    // Simulate decryption delay
+    // Phase 1: Decryption scramble (1000ms)
     setTimeout(() => {
+      setShowFlash(true);
       setIsRevealed(true);
-      setIsDecrypting(false);
-    }, 1200);
+      // Phase 2: Flash + glow (200ms)
+      setTimeout(() => {
+        setShowFlash(false);
+        setIsDecrypting(false);
+      }, 300);
+    }, 1000);
   }, []);
 
   const isLive = market.status === "live";
@@ -42,6 +49,17 @@ export default function MarketDetailPage({
   return (
     <div className="relative min-h-screen">
       <GridBg className="fixed inset-0 h-full w-full pointer-events-none" />
+      <Scanline />
+
+      {/* Reveal flash overlay */}
+      {showFlash && (
+        <div
+          className="fixed inset-0 z-50 pointer-events-none bg-veil-accent/10"
+          style={{
+            animation: "pulse-accent 300ms ease-out forwards",
+          }}
+        />
+      )}
 
       <div className="relative mx-auto max-w-4xl px-4 pt-8 pb-16 md:px-6 md:pt-12 lg:px-8">
         {/* Breadcrumb */}
@@ -107,7 +125,7 @@ export default function MarketDetailPage({
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <OddsTicker
-                    value={isRevealed ? market.yesOdds : market.yesOdds}
+                    value={market.yesOdds}
                     label="YES"
                     size="lg"
                     animated={isRevealed}
@@ -121,7 +139,7 @@ export default function MarketDetailPage({
                 </div>
                 <div>
                   <OddsTicker
-                    value={isRevealed ? market.noOdds : market.noOdds}
+                    value={market.noOdds}
                     label="NO"
                     size="lg"
                     animated={isRevealed}
@@ -194,6 +212,7 @@ export default function MarketDetailPage({
                         }
                         isRevealing={isDecrypting || isRevealed}
                         duration={1000}
+                        glowOnReveal
                       />
                     </span>
                   </div>
@@ -205,6 +224,7 @@ export default function MarketDetailPage({
                       text="$2,450.00"
                       isRevealing={isDecrypting || isRevealed}
                       duration={1000}
+                      glowOnReveal
                     />
                   </div>
                   <div className="flex items-baseline justify-between">
@@ -215,6 +235,7 @@ export default function MarketDetailPage({
                       text="$3,951.61"
                       isRevealing={isDecrypting || isRevealed}
                       duration={1000}
+                      glowOnReveal
                     />
                   </div>
                 </div>
