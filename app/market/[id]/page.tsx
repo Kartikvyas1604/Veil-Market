@@ -286,7 +286,12 @@ export default function MarketDetailPage({
 
             {/* Encryption info */}
             <div className="rounded-sm border border-border/50 bg-surface/50 p-6 stagger-enter" style={{ animationDelay: "250ms" }}>
-              <h3 className="mb-3 font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Encryption Status</h3>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">Encryption Status</h3>
+                <span className="font-mono text-[9px] tracking-[0.15em] text-text-muted/30 uppercase">
+                  Exhibit {market.id.split('-').pop()?.slice(0, 4).toUpperCase()}
+                </span>
+              </div>
               <div className="space-y-2.5">
                 {[
                   { label: "Protocol", value: "eERC (ElGamal)" },

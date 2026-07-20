@@ -29,6 +29,10 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <Scanline />
+        {/* Exhibit stamp — marginalia */}
+        <div className="exhibit-stamp absolute top-20 right-8 border-veil-300 text-veil-400 hidden md:block" aria-hidden="true">
+          Exhibit A
+        </div>
         <div className="relative mx-auto max-w-7xl px-4 pt-24 pb-20 md:px-6 md:pt-32 md:pb-24 lg:px-8">
           {/* Case file tag */}
           <div className="mb-8 flex justify-center stagger-enter" style={{ animationDelay: "0ms" }}>

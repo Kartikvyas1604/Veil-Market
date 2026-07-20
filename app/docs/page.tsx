@@ -91,16 +91,23 @@ export default function DocsPage() {
       <main id="main-content" className="mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         {/* Header */}
         <div className="mb-12 border-b border-veil-200 pb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
-          <span className="mb-3 inline-block font-mono text-[10px] tracking-[0.3em] text-veil-400 uppercase">
-            Documentation
-          </span>
-          <h1 className="font-serif text-3xl text-ink md:text-4xl">
-            Technical Reference
-          </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-veil-500">
-            Architecture, encryption protocols, contract addresses, and
-            integration guides for the VEIL confidential prediction market.
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="mb-3 inline-block font-mono text-[10px] tracking-[0.3em] text-veil-400 uppercase">
+                Documentation
+              </span>
+              <h1 className="font-serif text-3xl text-ink md:text-4xl">
+                Technical Reference
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-veil-500">
+                Architecture, encryption protocols, contract addresses, and
+                integration guides for the VEIL confidential prediction market.
+              </p>
+            </div>
+            <span className="hidden font-mono text-[10px] tracking-[0.15em] text-veil-400/40 md:block">
+              Ref: VEIL-2026-DOC
+            </span>
+          </div>
         </div>
 
         {/* Table of Contents */}

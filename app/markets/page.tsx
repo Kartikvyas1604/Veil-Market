@@ -33,12 +33,19 @@ export default function MarketsPage() {
 
       <main id="main-content" className="relative mx-auto max-w-7xl px-4 pt-10 pb-16 md:px-6 md:pt-14 lg:px-8">
         <div className="mb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
-          <h1 className="font-serif text-3xl text-text-primary md:text-4xl">
-            Markets
-          </h1>
-          <p className="mt-2 font-mono text-xs text-text-muted">
-            {filtered.length} market{filtered.length !== 1 ? "s" : ""} · Positions encrypted until settlement
-          </p>
+          <div className="flex items-end justify-between">
+            <div>
+              <h1 className="font-serif text-3xl text-text-primary md:text-4xl">
+                Markets
+              </h1>
+              <p className="mt-2 font-mono text-xs text-text-muted">
+                {filtered.length} market{filtered.length !== 1 ? "s" : ""} · Positions encrypted until settlement
+              </p>
+            </div>
+            <span className="hidden font-mono text-[10px] tracking-[0.2em] text-text-muted/40 uppercase md:block">
+              Case Files — Active
+            </span>
+          </div>
         </div>
 
         {/* Filter bar */}
