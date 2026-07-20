@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ConnectWallet } from "@/components/connect-wallet";
@@ -22,10 +23,14 @@ export function Nav() {
           className="flex items-center gap-2.5 group"
           aria-label="VEIL home"
         >
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-sm border border-border-strong bg-surface-raised">
-            <span className="font-mono text-xs font-bold tracking-wider text-text-primary">
-              V
-            </span>
+          <div className="relative flex h-8 w-8 items-center justify-center">
+            <Image 
+              src="/logo.svg" 
+              alt="VEIL Logo" 
+              width={32} 
+              height={32} 
+              className="opacity-90 transition-opacity group-hover:opacity-100 dark:invert-0 invert"
+            />
           </div>
           <span className="font-mono text-sm font-semibold tracking-[0.2em] uppercase text-text-primary">
             Veil
