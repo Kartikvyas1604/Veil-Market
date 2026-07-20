@@ -1,28 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { MarketCard } from "@/components/market-card";
-import { markets, getLiveMarkets, getResolvedMarkets } from "@/lib/markets";
+import { getMarkets } from "@/lib/actions/markets";
+import type { MarketWithOdds } from "@/lib/supabase";
 
-type Filter = "all" | "live" | "resolved";
+type Filter = "all" | "active" | "resolved";
 
 const filters: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "live", label: "Live" },
+  { key: "active", label: "Active" },
   { key: "resolved", label: "Resolved" },
 ];
 
+// Adapter to map DbMarket to the Market type expected by MarketCard
+function mapToCardMarket(dbMarket: MarketWithOdds) {
+  return {
+    id: dbMarket.market_id.toString(),
+    question: dbMarket.question,
+    category: dbMarket.category,
+    status: dbMarket.status === "active" ? "live" : dbMarket.status,
+    totalPool: dbMarket.total_pool || 0,
+    yesOdds: dbMarket.yes_odds / 100, // Assuming 0-100 from DB
+    noOdds: dbMarket.no_odds / 100,
+    endDate: new Date(dbMarket.resolution_time).getTime(),
+    resolvedOutcome: dbMarket.outcome === "none" ? undefined : dbMarket.outcome,
+  };
+}
+
 export default function MarketsPage() {
   const [filter, setFilter] = useState<Filter>("all");
+  const [dbMarkets, setDbMarkets] = useState<MarketWithOdds[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filtered =
-    filter === "all"
-      ? [...markets].sort((a, b) => b.totalPool - a.totalPool)
-      : filter === "live"
-        ? [...getLiveMarkets()].sort((a, b) => b.totalPool - a.totalPool)
-        : getResolvedMarkets();
+  useEffect(() => {
+    async function loadMarkets() {
+      try {
+        const data = await getMarkets();
+        setDbMarkets(data);
+      } catch (err) {
+        console.error("Failed to load markets:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadMarkets();
+  }, []);
+
+  const filtered = dbMarkets
+    .filter((m) => {
+      if (filter === "all") return true;
+      if (filter === "active") return m.status === "active";
+      if (filter === "resolved") return m.status === "resolved" || m.status === "disputed";
+      return true;
+    })
+    // Map to the component interface
+    .map(mapToCardMarket)
+    .sort((a, b) => b.totalPool - a.totalPool);
 
   const leadMarket = filtered[0];
   const restMarkets = filtered.slice(1);
@@ -39,7 +75,7 @@ export default function MarketsPage() {
                 Markets
               </h1>
               <p className="mt-2 font-mono text-xs text-text-muted">
-                {filtered.length} market{filtered.length !== 1 ? "s" : ""} · Positions encrypted until settlement
+                {isLoading ? "Loading markets..." : `${filtered.length} market${filtered.length !== 1 ? "s" : ""} · Positions encrypted until settlement`}
               </p>
             </div>
             <span className="hidden font-mono text-[10px] tracking-[0.2em] text-text-muted/40 uppercase md:block">
@@ -73,17 +109,22 @@ export default function MarketsPage() {
         </div>
 
         {/* Market grid */}
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-4 font-mono text-4xl text-text-muted animate-pulse">⧗</div>
+            <p className="font-serif text-lg text-text-secondary">Syncing ledger...</p>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="space-y-4">
             {/* Lead market — featured */}
             {leadMarket && (
-              <MarketCard key={leadMarket.id} market={leadMarket} index={0} featured />
+              <MarketCard key={leadMarket.id} market={leadMarket as any} index={0} featured />
             )}
             {/* Rest in standard grid */}
             {restMarkets.length > 0 && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {restMarkets.map((market, i) => (
-                  <MarketCard key={market.id} market={market} index={i + 1} />
+                  <MarketCard key={market.id} market={market as any} index={i + 1} />
                 ))}
               </div>
             )}

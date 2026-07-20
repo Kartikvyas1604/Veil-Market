@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ConnectWallet } from "@/components/connect-wallet";
 
 const links = [
   { href: "/markets", label: "Markets" },
@@ -57,16 +58,9 @@ export function Nav() {
 
           <div className="ml-3 h-4 w-px bg-border" aria-hidden="true" />
 
-          <Link
-            href="/onboarding"
-            className={cn(
-              "ml-3 stamp-btn inline-flex min-h-[40px] items-center rounded-sm border px-4 font-mono text-xs font-medium tracking-wide transition-colors duration-150",
-              "border-border-strong bg-surface-raised text-text-primary hover:bg-surface-elevated",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-500 focus-visible:ring-offset-2"
-            )}
-          >
-            Connect Wallet
-          </Link>
+          <div className="ml-3">
+            <ConnectWallet />
+          </div>
         </nav>
       </div>
     </header>

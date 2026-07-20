@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, JetBrains_Mono, Fraunces } from "next/font/google";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ParticleFieldWrapper } from "@/components/particle-field-wrapper";
+import { Web3Provider } from "@/components/web3-provider";
+import { Nav } from "@/components/nav";
 import "./globals.css";
 
 const geist = Geist({
@@ -47,10 +49,13 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <SmoothScroll>
-          <ParticleFieldWrapper />
-          {children}
-        </SmoothScroll>
+        <Web3Provider>
+          <Nav />
+          <SmoothScroll>
+            <ParticleFieldWrapper />
+            {children}
+          </SmoothScroll>
+        </Web3Provider>
       </body>
     </html>
   );
