@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, JetBrains_Mono, Instrument_Serif } from "next/font/google";
-import { Nav } from "@/components/nav";
+import { Geist, JetBrains_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
@@ -15,10 +14,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -26,7 +25,7 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "VEIL — Confidential Prediction Markets",
   description:
-    "Bet on real-world outcomes with encrypted positions. Nobody sees your bet until settlement.",
+    "Encrypted positions on real-world outcomes. Nobody sees your bet until settlement.",
 };
 
 export default function RootLayout({
@@ -37,12 +36,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} h-full`}
+      className={`${geist.variable} ${jetbrainsMono.variable} ${fraunces.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col antialiased">
-        <Nav />
-        <main className="flex-1">{children}</main>
-      </body>
+      <body className="min-h-full flex flex-col antialiased">{children}</body>
     </html>
   );
 }
