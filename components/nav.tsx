@@ -8,6 +8,7 @@ import { ConnectWallet } from "@/components/connect-wallet";
 const links = [
   { href: "/markets", label: "Markets" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/create", label: "Create" },
 ];
 
 export function Nav() {

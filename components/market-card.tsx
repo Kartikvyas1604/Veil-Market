@@ -5,10 +5,20 @@ import { cn, formatNumber, getMarketUrgency } from "@/lib/utils";
 import { SealBadge } from "./seal-badge";
 import { OddsTicker } from "./odds-ticker";
 import { Countdown } from "./countdown";
-import type { Market } from "@/lib/markets";
+export interface CardMarket {
+  id: string;
+  question: string;
+  category: string;
+  yesOdds: number;
+  noOdds: number;
+  totalPool: number;
+  status: string;
+  endDate: number;
+  resolvedOutcome?: string;
+}
 
 interface MarketCardProps {
-  market: Market;
+  market: CardMarket;
   index?: number;
   featured?: boolean;
 }

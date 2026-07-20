@@ -1,44 +1,72 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ─── OS / Editor ───────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/settings.json
+*.sublime-project
+*.sublime-workspace
 
-# dependencies
-/node_modules
-/.pnp
+# ─── Environment / Secrets ─────────────────────────────────────────────────
+# NEVER commit secrets or keys
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.staging
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ─── Node / npm / yarn ─────────────────────────────────────────────────────
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+package-lock.json.bak
 
-# env files (can opt-in for committing if needed)
-.env*
+# ─── Next.js ───────────────────────────────────────────────────────────────
+.next/
+out/
+build/
+.vercel/
 
-# brand preview artifact
-.brand-preview/
-
-# vercel
-.vercel
-
-# typescript
+# ─── TypeScript ────────────────────────────────────────────────────────────
 *.tsbuildinfo
 next-env.d.ts
+
+# ─── Foundry / Solidity ────────────────────────────────────────────────────
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+contracts/.env
+
+# ─── Supabase ──────────────────────────────────────────────────────────────
+supabase/.temp/
+supabase/functions/.env
+
+# ─── Testing ───────────────────────────────────────────────────────────────
+coverage/
+lcov.info
+.nyc_output/
+
+# ─── Misc ──────────────────────────────────────────────────────────────────
+.brand-preview/
+*.log
