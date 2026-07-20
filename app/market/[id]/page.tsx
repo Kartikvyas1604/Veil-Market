@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { formatNumber, getMarketUrgency } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
@@ -9,19 +9,13 @@ import { SealBadge } from "@/components/seal-badge";
 import { OddsTicker } from "@/components/odds-ticker";
 import { Countdown } from "@/components/countdown";
 import { StampButton } from "@/components/stamp-button";
+import { ErrorInline } from "@/components/error-toast";
+import { translateError, type FriendlyError } from "@/lib/error-messages";
 import { getMarket } from "@/lib/actions/markets";
 import { supabase } from "@/lib/supabase";
 import type { MarketWithOdds } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import { useAccount, useWriteContract, usePublicClient } from "wagmi";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "object" && error && "shortMessage" in error && typeof error.shortMessage === "string") {
-    return error.shortMessage;
-  }
-  return fallback;
-}
 
 export default function MarketDetailPage({
   params,
@@ -114,19 +108,20 @@ export default function MarketDetailPage({
   const [betStep, setBetStep] = useState<"idle" | "encrypting" | "proof" | "sealed">("idle");
   const [selectedSide, setSelectedSide] = useState<1 | 2>(1); // 1 = YES, 2 = NO
   const [betAmount, setBetAmount] = useState("100");
-  const [betError, setBetError] = useState("");
+  const [betError, setBetError] = useState<FriendlyError | null>(null);
+  const clearBetError = useCallback(() => setBetError(null), []);
 
   const handlePlaceBet = async () => {
     if (!address || !market) {
-      setBetError("Please connect your wallet first");
+      setBetError(translateError("You must connect your wallet first."));
       return;
     }
     if (!publicClient) {
-      setBetError("Wallet network is still initializing. Please try again.");
+      setBetError(translateError("Public client not found"));
       return;
     }
     
-    setBetError("");
+    setBetError(null);
     setBetStep("encrypting");
     
     try {
@@ -200,7 +195,7 @@ export default function MarketDetailPage({
       setBetStep("sealed");
     } catch (error) {
       console.error(error);
-      setBetError(getErrorMessage(error, "Failed to place bet. The transaction may have been rejected."));
+      setBetError(translateError(error));
       setBetStep("idle");
     }
   };
@@ -372,11 +367,7 @@ export default function MarketDetailPage({
                     <StampButton variant="light" className="w-full" onClick={handlePlaceBet}>
                       Seal Position
                     </StampButton>
-                    {betError && (
-                      <p className="mt-2 text-center font-mono text-xs text-red-400">
-                        {betError}
-                      </p>
-                    )}
+                    <ErrorInline error={betError} onDismiss={clearBetError} />
                     <p className="mt-2 text-center font-mono text-[10px] text-text-muted">
                       Your bet will be encrypted on-chain.
                     </p>

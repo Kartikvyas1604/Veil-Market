@@ -366,6 +366,12 @@ html[data-theme="light"] .section-divider::before {
   animation: badge-pulse 2s ease-in-out infinite;
 }
 
+/* Error toast auto-dismiss progress bar */
+@keyframes shrink-bar {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 /* Focus ring — grayscale only */
 *:focus-visible {
   outline: 2px solid var(--color-veil-500);
