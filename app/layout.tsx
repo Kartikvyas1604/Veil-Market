@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono, Fraunces } from "next/font/google";
+import { SmoothScroll } from "@/components/smooth-scroll";
+import { ParticleFieldWrapper } from "@/components/particle-field-wrapper";
 import "./globals.css";
 
 const geist = Geist({
@@ -45,7 +47,10 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <SmoothScroll>
+          <ParticleFieldWrapper />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );

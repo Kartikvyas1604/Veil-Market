@@ -55,7 +55,7 @@ function AnimatedNumber({
   }, [value]);
 
   return (
-    <span className="font-mono font-bold tabular-nums text-ink">
+    <span className="font-mono font-bold tabular-nums text-text-primary">
       {prefix}
       {formatNumber(display)}
       {suffix}
@@ -82,7 +82,7 @@ export function StatsBar({ stats, className }: StatsBarProps) {
             prefix={stat.prefix}
             suffix={stat.suffix}
           />
-          <span className="font-mono text-[10px] tracking-[0.2em] text-veil-500 uppercase">
+          <span className="font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">
             {stat.label}
           </span>
         </div>

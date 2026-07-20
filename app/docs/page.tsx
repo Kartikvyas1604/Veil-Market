@@ -84,27 +84,27 @@ A: Currently on Fuji testnet. Mainnet after audit.`,
 
 export default function DocsPage() {
   return (
-    <div className="relative bg-paper paper-texture">
+    <div className="relative bg-veil-900">
       {/* Case file margin line */}
-      <div className="case-file-margin case-file-margin--light absolute left-[calc(50%-20rem)] top-0 bottom-0 hidden lg:block" aria-hidden="true" />
+      <div className="case-file-margin case-file-margin--dark absolute left-[calc(50%-20rem)] top-0 bottom-0 hidden lg:block" aria-hidden="true" />
 
       <main id="main-content" className="mx-auto max-w-4xl px-4 pt-16 pb-20 md:px-6 md:pt-24 lg:px-8">
         {/* Header */}
-        <div className="mb-12 border-b border-veil-200 pb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
+        <div className="mb-12 border-b border-border pb-8 stagger-enter" style={{ animationDelay: "0ms" }}>
           <div className="flex items-start justify-between">
             <div>
-              <span className="mb-3 inline-block font-mono text-[10px] tracking-[0.3em] text-veil-400 uppercase">
+              <span className="mb-3 inline-block font-mono text-[10px] tracking-[0.3em] text-text-muted uppercase">
                 Documentation
               </span>
-              <h1 className="font-serif text-3xl text-ink md:text-4xl">
+              <h1 className="font-serif text-3xl text-text-primary md:text-4xl">
                 Technical Reference
               </h1>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-veil-500">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-muted">
                 Architecture, encryption protocols, contract addresses, and
                 integration guides for the VEIL confidential prediction market.
               </p>
             </div>
-            <span className="hidden font-mono text-[10px] tracking-[0.15em] text-veil-400/40 md:block">
+            <span className="hidden font-mono text-[10px] tracking-[0.15em] text-text-muted/40 md:block">
               Ref: VEIL-2026-DOC
             </span>
           </div>
@@ -112,7 +112,7 @@ export default function DocsPage() {
 
         {/* Table of Contents */}
         <nav className="mb-12 stagger-enter" style={{ animationDelay: "50ms" }}>
-          <h2 className="mb-3 font-mono text-[10px] tracking-[0.2em] text-veil-400 uppercase">
+          <h2 className="mb-3 font-mono text-[10px] tracking-[0.2em] text-text-muted uppercase">
             Contents
           </h2>
           <ul className="space-y-1.5">
@@ -120,7 +120,7 @@ export default function DocsPage() {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="font-mono text-xs text-veil-500 transition-colors duration-150 hover:text-ink"
+                  className="font-mono text-xs text-text-muted transition-colors duration-150 hover:text-text-primary"
                 >
                   {s.title}
                 </a>
@@ -138,10 +138,10 @@ export default function DocsPage() {
               className="scroll-mt-20 stagger-enter"
               style={{ animationDelay: `${100 + i * 60}ms` }}
             >
-              <h2 className="mb-4 font-serif text-xl text-ink">
+              <h2 className="mb-4 font-serif text-xl text-text-primary">
                 {section.title}
               </h2>
-              <div className="prose-veil whitespace-pre-line rounded-sm border border-veil-200 bg-veil-50 p-6 font-mono text-xs leading-relaxed text-veil-600">
+              <div className="whitespace-pre-line rounded-sm border border-border bg-surface-raised p-6 font-mono text-xs leading-relaxed text-text-secondary">
                 {section.content}
               </div>
             </section>
@@ -149,10 +149,10 @@ export default function DocsPage() {
         </div>
 
         {/* Footer link */}
-        <div className="mt-12 border-t border-veil-200 pt-8">
+        <div className="mt-12 border-t border-border pt-8">
           <Link
             href="/how-it-works"
-            className="font-mono text-xs text-veil-500 transition-colors duration-150 hover:text-ink"
+            className="font-mono text-xs text-text-muted transition-colors duration-150 hover:text-text-primary"
           >
             ← Back to How It Works
           </Link>
