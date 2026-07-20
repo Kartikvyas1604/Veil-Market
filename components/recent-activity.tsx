@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { cn, formatNumber } from "@/lib/utils";
 
 interface ActivityItem {

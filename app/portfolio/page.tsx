@@ -4,7 +4,7 @@ import Link from "next/link";
 import { cn, formatNumber } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { SealBadge } from "@/components/seal-badge";
-import { Countdown } from "@/components/countdown";
+
 
 interface Position {
   id: string;

@@ -2,7 +2,7 @@
 
 import { use, useState, useCallback } from "react";
 import Link from "next/link";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { CipherText } from "@/components/cipher-text";
 import { SealBadge } from "@/components/seal-badge";

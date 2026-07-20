@@ -24,10 +24,7 @@ export function OddsTicker({
   const frameRef = useRef(0);
 
   useEffect(() => {
-    if (!animated) {
-      setDisplay(value);
-      return;
-    }
+    if (!animated) return;
 
     let cancelled = false;
     const start = performance.now();

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
 

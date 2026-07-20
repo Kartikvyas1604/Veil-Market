@@ -4,15 +4,11 @@ import { cn } from "@/lib/utils";
 
 interface CipherNoiseProps {
   className?: string;
-  density?: number;
-  speed?: number;
   opacity?: number;
 }
 
 export function CipherNoise({
   className,
-  density = 0.4,
-  speed = 80,
   opacity = 0.06,
 }: CipherNoiseProps) {
   return (
