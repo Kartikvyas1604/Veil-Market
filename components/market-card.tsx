@@ -21,6 +21,7 @@ export function MarketCard({ market, index = 0 }: MarketCardProps) {
       className={cn(
         "group relative block rounded-lg border p-5 transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-veil-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-veil-bg",
+        "min-h-[44px]",
         isLive
           ? "border-veil-border hover:border-veil-border-strong hover:bg-veil-surface/50"
           : "border-veil-border/50 opacity-75 hover:opacity-100",
