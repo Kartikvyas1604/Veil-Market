@@ -13,6 +13,7 @@ import {IVeilBetVerifier} from "./interfaces/IVeilBetVerifier.sol";
 contract VeilFactory is IVeilFactory, Ownable {
     address public immutable registry;
     address public immutable betVerifier;
+    address public immutable usdc;
 
     /// @notice marketId => market contract address
     mapping(uint256 => address) private _markets;
@@ -33,9 +34,10 @@ contract VeilFactory is IVeilFactory, Ownable {
 
     // ─── Constructor ───────────────────────────────────────────────────
 
-    constructor(address _registry, address _betVerifier) Ownable(msg.sender) {
+    constructor(address _registry, address _betVerifier, address _usdc) Ownable(msg.sender) {
         registry = _registry;
         betVerifier = _betVerifier;
+        usdc = _usdc;
     }
 
     // ─── Market Creation ───────────────────────────────────────────────
@@ -73,7 +75,8 @@ contract VeilFactory is IVeilFactory, Ownable {
                 resolutionTime,
                 minBet,
                 maxBet,
-                committee
+                committee,
+                usdc
             )
         );
 

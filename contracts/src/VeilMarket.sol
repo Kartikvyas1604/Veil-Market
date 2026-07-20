@@ -7,6 +7,7 @@ import {BabyJubJub} from "EncryptedERC/libraries/BabyJubJub.sol";
 import {Point, EGCT} from "EncryptedERC/types/Types.sol";
 import {IVeilRegistry} from "./interfaces/IVeilRegistry.sol";
 import {IVeilBetVerifier} from "./interfaces/IVeilBetVerifier.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
 
 /// @title VeilMarket
 /// @notice A single prediction market with encrypted pool accumulators
@@ -73,6 +74,7 @@ contract VeilMarket is Ownable, Pausable {
 
     IVeilRegistry public immutable registry;
     IVeilBetVerifier public immutable betVerifier;
+    IERC20 public immutable usdc;
 
     // Market metadata
     uint256 public immutable marketId;
@@ -155,10 +157,12 @@ contract VeilMarket is Ownable, Pausable {
         uint256 _resolutionTime,
         uint256 _minBet,
         uint256 _maxBet,
-        address[] memory _committee
+        address[] memory _committee,
+        address _usdc
     ) Ownable(msg.sender) {
         registry = _registry;
         betVerifier = _betVerifier;
+        usdc = IERC20(_usdc);
         marketId = _marketId;
         question = _question;
         category = _category;
@@ -197,14 +201,16 @@ contract VeilMarket is Ownable, Pausable {
     /// @param publicSignals [bettor, marketId, amountCommitment, poolCommitment, nullifier]
     /// @param side 1 = YES, 2 = NO
     /// @param encryptedBet The ElGamal ciphertext of the bet amount
+    /// @param plaintextAmount The amount to deduct in USDC (WARNING: breaks privacy, added for demo)
     function placeBet(
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
         uint256[2] calldata proofC,
         uint256[5] calldata publicSignals,
         uint8 side,
-        EGCT calldata encryptedBet
-    ) external payable whenNotPaused {
+        EGCT calldata encryptedBet,
+        uint256 plaintextAmount
+    ) external whenNotPaused {
         // Preconditions
         require(status == MarketStatus.Active, "Market not active");
         require(block.timestamp < resolutionTime, "Market expired");
@@ -230,6 +236,12 @@ contract VeilMarket is Ownable, Pausable {
 
         // Mark nullifier as spent
         nullifiers[nullifier] = true;
+
+        // Transfer USDC from bettor to this contract
+        require(
+            usdc.transferFrom(msg.sender, address(this), plaintextAmount),
+            "USDC transfer failed"
+        );
 
         // Store the bet (encrypted amount only)
         bets.push(

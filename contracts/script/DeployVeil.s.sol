@@ -40,8 +40,11 @@ contract DeployVeil is Script {
         PassthroughBetVerifier verifier = new PassthroughBetVerifier();
         console.log("PassthroughBetVerifier:", address(verifier));
 
+        // Fuji USDC address
+        address fujiUsdc = 0x5425890298aed601595a70AB815c96711a31Bc65;
+
         // ── 3. Deploy Factory ───────────────────────────────────────────
-        VeilFactory factory = new VeilFactory(address(registry), address(verifier));
+        VeilFactory factory = new VeilFactory(address(registry), address(verifier), fujiUsdc);
         console.log("VeilFactory:", address(factory));
 
         // ── 4. Deploy ThresholdDecryption (standalone, for reference) ───
@@ -143,6 +146,6 @@ contract DeployVeil is Script {
         console.log("NEXT_PUBLIC_REGISTRAR_ADDRESS=%s", address(registry));
         console.log("NEXT_PUBLIC_THRESHOLD_DECRYPTION_ADDRESS=%s", address(tdec));
         console.log("NEXT_PUBLIC_BET_VERIFIER_ADDRESS=%s", address(verifier));
-        console.log("COMMITTEE_ADDRESS=%s", deployer);
+        console.log("COMMITTEE_ADDRESS=%s", "0xd5b9Ed9E3c7b72e97fDbe8De818B072901eEB098");
     }
 }

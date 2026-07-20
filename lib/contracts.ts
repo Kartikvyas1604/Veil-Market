@@ -105,6 +105,7 @@ export const VEIL_MARKET_ABI = [
           { name: "c2", type: "tuple", components: [{ name: "x", type: "uint256" }, { name: "y", type: "uint256" }] },
         ],
       },
+      { name: "plaintextAmount", type: "uint256" },
     ],
     outputs: [],
     stateMutability: "nonpayable",

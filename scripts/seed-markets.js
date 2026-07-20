@@ -10,7 +10,7 @@ const now = Date.now();
 const markets = [
   {
     market_id: 0,
-    contract_address: '0x267d26baa8db42ab48fe14a46c7817d1b8d2874a',
+    contract_address: '0x7c7c135eb8e0f117a7b428e2618b9458b78a117f',
     question: 'Will the Federal Reserve cut rates in January 2026?',
     category: 'Macro',
     resolution_time: new Date(now + 90 * 24 * 3600 * 1000).toISOString(),
@@ -21,7 +21,7 @@ const markets = [
   },
   {
     market_id: 1,
-    contract_address: '0x5623bb61472a3cf50351f179f522ad7b538d1081',
+    contract_address: '0xdfb5c18a9e7b038181d5e2d649334baf2a86e7b7',
     question: 'Will Bitcoin exceed $150,000 before end of Q1 2026?',
     category: 'Crypto',
     resolution_time: new Date(now + 60 * 24 * 3600 * 1000).toISOString(),
@@ -32,7 +32,7 @@ const markets = [
   },
   {
     market_id: 2,
-    contract_address: '0xcec4ed16f4f662a230de0da133db1fec81774f93',
+    contract_address: '0x8c52da14762bc0d48c40b1d766bc4cd998665d60',
     question: 'Will SpaceX Starship complete a full orbital mission by March 2026?',
     category: 'Science',
     resolution_time: new Date(now + 45 * 24 * 3600 * 1000).toISOString(),
@@ -43,7 +43,7 @@ const markets = [
   },
   {
     market_id: 3,
-    contract_address: '0xffdbf9c9f35242dec8c106f425b0d658adf252fd',
+    contract_address: '0x246bcf249d49c9873689f1e7f78aafa71972537b',
     question: 'Will AVAX token price exceed $50 by end of Q2 2026?',
     category: 'Crypto',
     resolution_time: new Date(now + 120 * 24 * 3600 * 1000).toISOString(),
@@ -54,7 +54,7 @@ const markets = [
   },
   {
     market_id: 4,
-    contract_address: '0xd3ddee3341d08a15bc6c9a189eb7300518eae45f',
+    contract_address: '0xe8617f7e42345155e5c83659e7d0eea65569c136',
     question: 'Will Apple announce a new AR headset at WWDC 2026?',
     category: 'Tech',
     resolution_time: new Date(now + 75 * 24 * 3600 * 1000).toISOString(),
@@ -65,7 +65,7 @@ const markets = [
   },
   {
     market_id: 5,
-    contract_address: '0x631b2bb1693467c9498582040a61765ecf260016',
+    contract_address: '0x4b164d6bd7b7f4ade4249403e96f84f5257e76df',
     question: 'Will a Solana spot ETF be approved by the SEC in 2026?',
     category: 'Crypto',
     resolution_time: new Date(now + 180 * 24 * 3600 * 1000).toISOString(),
@@ -76,7 +76,7 @@ const markets = [
   },
   {
     market_id: 6,
-    contract_address: '0xbdb5fce61372fb6424dbb3336373842ee27ba59b',
+    contract_address: '0x711698bedffd30dba7ae545cecc7266024d271db',
     question: 'Will the US federal government experience a shutdown in 2026?',
     category: 'Politics',
     resolution_time: new Date(now + 200 * 24 * 3600 * 1000).toISOString(),

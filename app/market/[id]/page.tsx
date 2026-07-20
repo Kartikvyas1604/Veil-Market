@@ -13,7 +13,7 @@ import { getMarket } from "@/lib/actions/markets";
 import { supabase } from "@/lib/supabase";
 import type { MarketWithOdds } from "@/lib/supabase";
 import { notFound } from "next/navigation";
-import { useAccount, useWalletClient, useWriteContract } from "wagmi";
+import { useAccount, useWalletClient, useWriteContract, usePublicClient } from "wagmi";
 
 export default function MarketDetailPage({
   params,
@@ -102,6 +102,7 @@ export default function MarketDetailPage({
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const [isRevealingLocal, setIsRevealingLocal] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
@@ -160,7 +161,29 @@ export default function MarketDetailPage({
 
       // Now send the transaction
       const { VEIL_MARKET_ABI } = await import("@/lib/contracts");
+      const FUJI_USDC = "0x5425890298aed601595a70AB815c96711a31Bc65";
+      const { erc20Abi } = await import("viem");
       
+      const usdcAmount = BigInt(Math.floor(amountFloat * 1e6)); // 6 decimals for USDC
+      
+      // 1. Approve USDC
+      setBetStep("encrypting"); // Using encrypting as a generic loading state for approval
+      console.log("Approving USDC...");
+      const approveTx = await writeContractAsync({
+        abi: erc20Abi,
+        address: FUJI_USDC,
+        functionName: "approve",
+        args: [market.contract_address as `0x${string}`, usdcAmount]
+      });
+      console.log("USDC Approved, waiting for receipt:", approveTx);
+      
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: approveTx });
+      }
+
+      setBetStep("proof");
+      
+      // 2. Place Bet
       const txHash = await writeContractAsync({
         abi: VEIL_MARKET_ABI,
         address: market.contract_address as `0x${string}`,
@@ -171,9 +194,9 @@ export default function MarketDetailPage({
           betProof.proofC,
           betProof.publicSignals,
           selectedSide,
-          betProof.encryptedBet
-        ],
-        value: betAmountWei,
+          betProof.encryptedBet,
+          usdcAmount
+        ]
       });
       
       console.log("Bet transaction sent!", txHash);
