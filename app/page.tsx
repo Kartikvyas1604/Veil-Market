@@ -7,6 +7,7 @@ import { Scanline } from "@/components/scanline";
 import { StatsBar } from "@/components/stats-bar";
 import { MarketCard } from "@/components/market-card";
 import { RecentActivity } from "@/components/recent-activity";
+import { Footer } from "@/components/footer";
 import { getLiveMarkets, markets } from "@/lib/markets";
 
 const featuredMarkets = getLiveMarkets().slice(0, 4);
@@ -237,23 +238,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-veil-border bg-veil-surface/20">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-8 md:flex-row md:justify-between md:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold tracking-[0.15em] text-veil-text-muted uppercase">
-              Veil
-            </span>
-            <span className="font-mono text-[10px] text-veil-text-muted">
-              · Avalanche C-Chain
-            </span>
-          </div>
-          <div className="flex gap-6">
-            <span className="font-mono text-[10px] text-veil-text-muted">
-              Powered by eERC & Homomorphic Encryption
-            </span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
