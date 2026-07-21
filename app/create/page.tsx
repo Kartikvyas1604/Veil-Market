@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
+import { AlertBanner } from "@/components/alert-banner";
 
 import { useAccount, useWriteContract, usePublicClient } from "wagmi";
 import { decodeEventLog } from "viem";
@@ -15,12 +16,62 @@ const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", 
 
 type Step = "compose" | "review" | "confirming" | "done";
 
+type AppError = {
+  title: string;
+  message: string;
+  details?: string;
+  variant: "error" | "warning" | "info";
+};
+
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "object" && error && "shortMessage" in error && typeof error.shortMessage === "string") {
     return error.shortMessage;
   }
   return fallback;
+}
+
+function parseApiError(data: { error?: string; details?: string }, status: number): AppError {
+  const msg = data.error || "An unexpected error occurred.";
+
+  if (status === 503) {
+    return {
+      title: "Service Unavailable",
+      message: msg,
+      details: "The market creation service is temporarily unavailable. This may be due to misconfigured committee wallets or the service being restarted.",
+      variant: "warning",
+    };
+  }
+  if (status === 401) {
+    return {
+      title: "Authentication Required",
+      message: msg,
+      details: "Please connect your wallet to create a market.",
+      variant: "warning",
+    };
+  }
+  if (status === 400) {
+    return {
+      title: "Validation Error",
+      message: msg,
+      details: data.details,
+      variant: "error",
+    };
+  }
+  if (status === 500) {
+    return {
+      title: "Server Error",
+      message: msg,
+      details: "Something went wrong on our end. Please try again in a moment.",
+      variant: "error",
+    };
+  }
+  return {
+    title: "Error",
+    message: msg,
+    details: data.details,
+    variant: "error",
+  };
 }
 
 export default function CreateMarketPage() {
@@ -35,7 +86,7 @@ export default function CreateMarketPage() {
   const [resolutionDate, setResolutionDate] = useState("");
   const [minBet, setMinBet] = useState("0.1");
   const [maxBet, setMaxBet] = useState("1000");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AppError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdMarket, setCreatedMarket] = useState<{ question: string; pendingId: string } | null>(null);
   const [dateBounds] = useState(() => {
@@ -51,14 +102,14 @@ export default function CreateMarketPage() {
   const isQuestionValid = question.trim().length >= 10;
   const isDateProvided = resolutionDate.length > 0;
 
-  function validate(): string {
-    if (!isQuestionValid) return "Question must be at least 10 characters.";
-    if (charCount > charLimit) return `Question exceeds ${charLimit} character limit.`;
-    if (!isDateProvided || new Date(resolutionDate).getTime() <= Date.now()) return "Resolution date must be in the future.";
-    if (parseFloat(minBet) <= 0) return "Min bet must be greater than 0.";
-    if (parseFloat(maxBet) <= parseFloat(minBet)) return "Max bet must be greater than min bet.";
-    if (!address) return "You must connect your wallet first.";
-    return "";
+  function validate(): AppError | null {
+    if (!isQuestionValid) return { title: "Invalid Question", message: "Question must be at least 10 characters.", variant: "error" };
+    if (charCount > charLimit) return { title: "Question Too Long", message: `Question exceeds ${charLimit} character limit.`, variant: "error" };
+    if (!isDateProvided || new Date(resolutionDate).getTime() <= Date.now()) return { title: "Invalid Date", message: "Resolution date must be in the future.", variant: "error" };
+    if (parseFloat(minBet) <= 0) return { title: "Invalid Bet Range", message: "Min bet must be greater than 0.", variant: "error" };
+    if (parseFloat(maxBet) <= parseFloat(minBet)) return { title: "Invalid Bet Range", message: "Max bet must be greater than min bet.", variant: "error" };
+    if (!address) return { title: "Wallet Not Connected", message: "You must connect your wallet first.", variant: "warning" };
+    return null;
   }
 
   async function handleSubmit() {
@@ -67,13 +118,13 @@ export default function CreateMarketPage() {
       setError(validationError);
       return;
     }
-    setError("");
+    setError(null);
     setStep("review");
   }
 
   async function handleConfirm() {
     if (!address) {
-      setError("You must connect your wallet first.");
+      setError({ title: "Wallet Not Connected", message: "You must connect your wallet first.", variant: "warning" });
       setStep("compose");
       return;
     }
@@ -91,7 +142,7 @@ export default function CreateMarketPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to create market.");
+        setError(parseApiError(data, res.status));
         setStep("compose");
         setIsSubmitting(false);
         return;
@@ -166,7 +217,12 @@ export default function CreateMarketPage() {
       setStep("done");
     } catch (error) {
       console.error(error);
-      setError(getErrorMessage(error, "Transaction failed or was rejected."));
+      setError({
+        title: "Transaction Failed",
+        message: getErrorMessage(error, "Transaction failed or was rejected."),
+        details: "Please check your wallet and try again.",
+        variant: "error",
+      });
       setStep("compose");
     } finally {
       setIsSubmitting(false);
@@ -209,6 +265,7 @@ export default function CreateMarketPage() {
                   setCategory("Crypto");
                   setResolutionDate("");
                   setCreatedMarket(null);
+                  setError(null);
                 }}
                 className="font-mono text-xs text-text-muted underline hover:text-text-secondary transition-colors"
               >
@@ -255,7 +312,14 @@ export default function CreateMarketPage() {
             </div>
 
             {error && (
-              <p className="mb-4 font-mono text-xs text-red-400">{error}</p>
+              <AlertBanner
+                variant={error.variant}
+                title={error.title}
+                message={error.message}
+                details={error.details}
+                onDismiss={() => setError(null)}
+                className="mb-4"
+              />
             )}
 
             <div className="flex gap-3">
@@ -387,9 +451,13 @@ export default function CreateMarketPage() {
 
               {/* Error */}
               {error && (
-                <div className="rounded-sm border border-red-400/30 bg-red-400/5 px-4 py-3">
-                  <p className="font-mono text-xs text-red-400">{error}</p>
-                </div>
+                <AlertBanner
+                  variant={error.variant}
+                  title={error.title}
+                  message={error.message}
+                  details={error.details}
+                  onDismiss={() => setError(null)}
+                />
               )}
 
               {/* Submit */}
