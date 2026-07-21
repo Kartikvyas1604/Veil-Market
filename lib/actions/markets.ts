@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabase, createSupabaseServerClient } from "@/lib/supabase";
 import type { MarketWithOdds, DbOddsSnapshot, DbMarket, DbMarketActivity, DbPositionCommitment } from "@/lib/supabase";
 
 /**
@@ -189,8 +189,9 @@ export async function getRecentActivity(limit = 30): Promise<DbMarketActivity[]>
 export async function getUserPositions(
   walletAddress: string
 ): Promise<DbPositionCommitment[]> {
-  // Look up user by wallet address
-  const { data: user, error: userError } = await supabase
+  const sb = createSupabaseServerClient();
+
+  const { data: user, error: userError } = await sb
     .from("users")
     .select("id")
     .eq("wallet_address", walletAddress.toLowerCase())
@@ -198,7 +199,7 @@ export async function getUserPositions(
 
   if (userError || !user) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("position_commitments")
     .select("*")
     .eq("user_id", user.id)
