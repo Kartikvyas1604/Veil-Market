@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { GridBg } from "@/components/grid-bg";
 import { StampButton } from "@/components/stamp-button";
+import { ErrorToast } from "@/components/error-toast";
+import { translateError, type FriendlyError } from "@/lib/error-messages";
 
 import { useAccount, useWriteContract, usePublicClient } from "wagmi";
 import { decodeEventLog } from "viem";
@@ -14,14 +16,6 @@ import { VEIL_FACTORY_ABI } from "@/lib/contracts";
 const CATEGORIES = ["Crypto", "Politics", "Science", "Tech", "Macro", "Sports", "Other"];
 
 type Step = "compose" | "review" | "confirming" | "done";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "object" && error && "shortMessage" in error && typeof error.shortMessage === "string") {
-    return error.shortMessage;
-  }
-  return fallback;
-}
 
 export default function CreateMarketPage() {
   const router = useRouter();
@@ -35,7 +29,7 @@ export default function CreateMarketPage() {
   const [resolutionDate, setResolutionDate] = useState("");
   const [minBet, setMinBet] = useState("0.1");
   const [maxBet, setMaxBet] = useState("1000");
-  const [error, setError] = useState("");
+  const [friendlyError, setFriendlyError] = useState<FriendlyError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdMarket, setCreatedMarket] = useState<{ question: string; pendingId: string } | null>(null);
   const [dateBounds] = useState(() => {
@@ -50,6 +44,18 @@ export default function CreateMarketPage() {
   const charLimit = 280;
   const isQuestionValid = question.trim().length >= 10;
   const isDateProvided = resolutionDate.length > 0;
+
+  const setError = useCallback((raw: unknown) => {
+    if (typeof raw === "string" && raw === "") {
+      setFriendlyError(null);
+      return;
+    }
+    setFriendlyError(translateError(raw));
+  }, []);
+
+  const clearError = useCallback(() => {
+    setFriendlyError(null);
+  }, []);
 
   function validate(): string {
     if (!isQuestionValid) return "Question must be at least 10 characters.";
@@ -67,7 +73,7 @@ export default function CreateMarketPage() {
       setError(validationError);
       return;
     }
-    setError("");
+    clearError();
     setStep("review");
   }
 
@@ -166,7 +172,7 @@ export default function CreateMarketPage() {
       setStep("done");
     } catch (error) {
       console.error(error);
-      setError(getErrorMessage(error, "Transaction failed or was rejected."));
+      setError(error);
       setStep("compose");
     } finally {
       setIsSubmitting(false);
@@ -254,8 +260,11 @@ export default function CreateMarketPage() {
               </p>
             </div>
 
-            {error && (
-              <p className="mb-4 font-mono text-xs text-red-400">{error}</p>
+            {/* Error toast in review step */}
+            {friendlyError && (
+              <div className="mb-4">
+                <ErrorToast error={friendlyError} onDismiss={clearError} />
+              </div>
             )}
 
             <div className="flex gap-3">
@@ -385,12 +394,8 @@ export default function CreateMarketPage() {
                 </div>
               </div>
 
-              {/* Error */}
-              {error && (
-                <div className="rounded-sm border border-red-400/30 bg-red-400/5 px-4 py-3">
-                  <p className="font-mono text-xs text-red-400">{error}</p>
-                </div>
-              )}
+              {/* Error toast — graceful, contextual error display */}
+              <ErrorToast error={friendlyError} onDismiss={clearError} />
 
               {/* Submit */}
               <div className="stagger-enter pt-2" style={{ animationDelay: "220ms" }}>
