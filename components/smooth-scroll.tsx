@@ -21,23 +21,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     lenis.on("scroll", ScrollTrigger.update);
 
-    ScrollTrigger.scrollerProxy(document.body, {
-      scrollTop(value) {
-        if (arguments.length && typeof value === "number") {
-          lenis.scrollTo(value, { immediate: true });
-        }
-        return lenis.scroll ?? 0;
-      },
-      getBoundingClientRect() {
-        return {
-          top: 0,
-          left: 0,
-          width: window.innerWidth,
-          height: window.innerHeight,
-        };
-      },
-    });
-
     function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -46,7 +29,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     return () => {
       lenis.destroy();
-      ScrollTrigger.killAll();
     };
   }, []);
 
